@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  linux:
+    name: Linux · Qt ${{ matrix.qt }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        qt: [5, 6]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar Qt ${{ matrix.qt }}
+        run: |
+          sudo apt-get update
+          if [ "${{ matrix.qt }}" = "6" ]; then
+            sudo apt-get install -y --no-install-recommends ninja-build \
+              qt6-base-dev qt6-declarative-dev libqt6sql6-sqlite libgl-dev
+          else
+            sudo apt-get install -y --no-install-recommends ninja-build \
+              qtbase5-dev qtdeclarative5-dev qtquickcontrols2-5-dev libqt5sql5-sqlite
+          fi
+
+      - name: Configurar
+        run: |
+          extra=""
+          if [ "${{ matrix.qt }}" = "5" ]; then extra="-DQT_DIR=/usr/lib/x86_64-linux-gnu/cmake/Qt5"; fi
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_COMPILE_WARNING_AS_ERROR=ON $extra
+
+      - name: Compilar
+        run: cmake --build build --parallel
+
+      - name: Tests
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: ctest --test-dir build --output-on-failure
+
+  windows:
+    name: Windows · Qt 6 · MinGW
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar Qt y MinGW
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.8.3'
+          host: windows
+          target: desktop
+          arch: win64_mingw
+          tools: 'tools_mingw1310'
+          cache: true
+
+      - name: Compilar y ejecutar tests
+        shell: pwsh
+        run: |
+          $mingw = Join-Path $env:IQTA_TOOLS "mingw1310_64\bin"
+          .\scripts\build.ps1 -QtDir $env:QT_ROOT_DIR -MingwBin $mingw -Config Release -Test
+        env:
+          QT_QPA_PLATFORM: offscreen
+
+      - name: Generar carpeta distribuible
+        shell: pwsh
+        run: |
+          $mingw = Join-Path $env:IQTA_TOOLS "mingw1310_64\bin"
+          .\scripts\deploy.ps1 -QtDir $env:QT_ROOT_DIR -MingwBin $mingw
+
+      - name: Publicar artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: PosCuba-windows-mingw
+          path: dist/PosCuba
+          retention-days: 30

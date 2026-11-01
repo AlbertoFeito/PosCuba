@@ -54,3 +54,15 @@ compile_commands.json
 *creator.user*
 
 *_qmlcache.qrc
+
+# PosCuba
+dist/
+*.user
+.vs/
+.vscode/
+.idea/
+*.tmp
+# Bases de datos y respaldos locales (nunca al repositorio)
+*.db
+*.db-wal
+*.db-shm

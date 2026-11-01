@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/sql">
+        <file alias="001_init.sql">src/data/migrations/001_init.sql</file>
+        <file alias="002_inventory.sql">src/data/migrations/002_inventory.sql</file>
+        <file alias="003_cash.sql">src/data/migrations/003_cash.sql</file>
+        <file alias="004_users.sql">src/data/migrations/004_users.sql</file>
+    </qresource>
+</RCC>
