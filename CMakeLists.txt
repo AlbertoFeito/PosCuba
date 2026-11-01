@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(PosCuba VERSION 1.0.1 LANGUAGES CXX)
+project(PosCuba VERSION 1.1.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -34,6 +34,8 @@ add_library(poscore OBJECT
     src/core/Currency.h
     src/core/CsvWriter.cpp
     src/core/CsvWriter.h
+    src/core/HelpCatalog.cpp
+    src/core/HelpCatalog.h
     src/core/Report.h
     src/core/Sale.h
     src/core/SaleCalculator.cpp
@@ -89,6 +91,7 @@ add_library(poscore OBJECT
     src/models/ProductListModel.cpp
     src/models/ProductListModel.h
     sql.qrc
+    manual.qrc
 )
 target_include_directories(poscore PUBLIC src)
 target_link_libraries(poscore PUBLIC
@@ -109,6 +112,8 @@ add_executable(pos
     src/controllers/CashController.h
     src/controllers/CurrencyController.cpp
     src/controllers/CurrencyController.h
+    src/controllers/HelpController.cpp
+    src/controllers/HelpController.h
     src/controllers/InventoryController.cpp
     src/controllers/InventoryController.h
     src/controllers/ProductController.cpp
@@ -157,7 +162,7 @@ endforeach()
 # ---- Tests ----
 if(POS_BUILD_TESTS)
     enable_testing()
-    foreach(name tst_money tst_productservice tst_inventory tst_salecalculator tst_sale tst_ticket tst_reports tst_users tst_backup tst_currency)
+    foreach(name tst_money tst_productservice tst_inventory tst_salecalculator tst_sale tst_ticket tst_reports tst_users tst_backup tst_currency tst_help)
         add_executable(${name} tests/${name}.cpp)
         target_link_libraries(${name} PRIVATE poscore Qt${QT_VERSION_MAJOR}::Test)
         if(MSVC)
@@ -165,6 +170,8 @@ if(POS_BUILD_TESTS)
         endif()
         add_test(NAME ${name} COMMAND ${name})
     endforeach()
+    # tst_help revisa que los temas de ayuda usados en la interfaz existan en el manual.
+    target_compile_definitions(tst_help PRIVATE POS_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 
     # Impresion: necesita GUI (fuentes), se ejecuta con la plataforma offscreen.
     add_executable(tst_ticketprinter tests/tst_ticketprinter.cpp src/printing/TicketPrinter.cpp)

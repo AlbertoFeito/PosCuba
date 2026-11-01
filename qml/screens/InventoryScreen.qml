@@ -80,10 +80,15 @@ Item {
             Layout.preferredWidth: 5
             spacing: Theme.spacing
 
-            Label {
-                text: qsTr("Inventario")
-                font.pixelSize: Theme.fontLarge
-                font.bold: true
+            RowLayout {
+                Layout.fillWidth: true
+                Label {
+                    text: qsTr("Inventario")
+                    font.pixelSize: Theme.fontLarge
+                    font.bold: true
+                    Layout.fillWidth: true
+                }
+                HelpButton { topic: "inventario" }
             }
 
             TextField {
@@ -102,6 +107,7 @@ Item {
                         list.forceActiveFocus()
                 }
                 Keys.onEscapePressed: searchField.text = ""
+                HelpTip { text: qsTr("Filtra por nombre o código; también se puede escanear. Enter o ↓ pasa a la lista.") }
             }
 
             CheckBox {
@@ -114,6 +120,7 @@ Item {
                     list.currentIndex = list.count > 0 ? 0 : -1
                     root.syncSelection()
                 }
+                HelpTip { text: qsTr("Muestra solo los productos con stock igual o menor que su stock mínimo: los que hay que reponer.") }
             }
 
             Rectangle {
@@ -140,7 +147,7 @@ Item {
                             Label { width: 80; height: parent.height; verticalAlignment: Text.AlignVCenter; text: qsTr("Código"); font.bold: true; color: Theme.textMuted }
                             Label { width: list.nameWidth; height: parent.height; verticalAlignment: Text.AlignVCenter; text: qsTr("Nombre"); font.bold: true; color: Theme.textMuted }
                             Label { width: 100; height: parent.height; verticalAlignment: Text.AlignVCenter; horizontalAlignment: Text.AlignRight; text: qsTr("Stock"); font.bold: true; color: Theme.textMuted }
-                            Label { width: 80; height: parent.height; verticalAlignment: Text.AlignVCenter; horizontalAlignment: Text.AlignRight; text: qsTr("Mínimo"); font.bold: true; color: Theme.textMuted }
+                            Label { width: 80; height: parent.height; verticalAlignment: Text.AlignVCenter; horizontalAlignment: Text.AlignRight; text: qsTr("Mínimo"); font.bold: true; color: Theme.textMuted; HelpTip { text: qsTr("Stock mínimo del producto (se define en Productos). — significa sin alerta.") } }
                         }
                     }
 
@@ -294,8 +301,8 @@ Item {
                     RowLayout {
                         visible: root.hasSelection
                         spacing: 8
-                        PrimaryButton { text: qsTr("Entrada (F5)"); focusPolicy: Qt.NoFocus; onClicked: root.openPurchase() }
-                        Button { text: qsTr("Ajuste (F6)"); focusPolicy: Qt.NoFocus; onClicked: root.openAdjust() }
+                        PrimaryButton { text: qsTr("Entrada (F5)"); focusPolicy: Qt.NoFocus; onClicked: root.openPurchase(); HelpTip { text: qsTr("Registra mercancía que llega: suma al stock y puede actualizar el costo.") } }
+                        Button { text: qsTr("Ajuste (F6)"); focusPolicy: Qt.NoFocus; onClicked: root.openAdjust(); HelpTip { text: qsTr("Corrige el stock con la cantidad real contada (merma, rotura, conteo físico…).") } }
                     }
                 }
             }
@@ -313,6 +320,7 @@ Item {
                     focusPolicy: Qt.NoFocus
                     checked: inventoryCtrl.showAllMovements
                     onToggled: inventoryCtrl.showAllMovements = checked
+                    HelpTip { text: qsTr("Muestra los movimientos de todos los productos, no solo del elegido.") }
                 }
             }
 
@@ -341,7 +349,7 @@ Item {
                             Label { width: 130; height: parent.height; verticalAlignment: Text.AlignVCenter; text: qsTr("Fecha"); font.bold: true; color: Theme.textMuted }
                             Label { width: 80; height: parent.height; verticalAlignment: Text.AlignVCenter; text: qsTr("Tipo"); font.bold: true; color: Theme.textMuted }
                             Label { width: 80; height: parent.height; verticalAlignment: Text.AlignVCenter; horizontalAlignment: Text.AlignRight; text: qsTr("Cantidad"); font.bold: true; color: Theme.textMuted }
-                            Label { width: 80; height: parent.height; verticalAlignment: Text.AlignVCenter; horizontalAlignment: Text.AlignRight; text: qsTr("Saldo"); font.bold: true; color: Theme.textMuted }
+                            Label { width: 80; height: parent.height; verticalAlignment: Text.AlignVCenter; horizontalAlignment: Text.AlignRight; text: qsTr("Saldo"); font.bold: true; color: Theme.textMuted; HelpTip { text: qsTr("Stock que quedó después de cada movimiento.") } }
                             Label { width: movList.detailWidth; height: parent.height; verticalAlignment: Text.AlignVCenter; text: qsTr("Detalle"); font.bold: true; color: Theme.textMuted }
                         }
                     }

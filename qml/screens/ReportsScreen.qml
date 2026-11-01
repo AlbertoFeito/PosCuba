@@ -47,7 +47,8 @@ Item {
         RowLayout {
             Layout.fillWidth: true
             spacing: 6
-            Label { text: qsTr("Reportes"); font.pixelSize: Theme.fontLarge; font.bold: true; Layout.rightMargin: 12 }
+            Label { text: qsTr("Reportes"); font.pixelSize: Theme.fontLarge; font.bold: true }
+            HelpButton { topic: "reportes"; Layout.rightMargin: 12 }
             Repeater {
                 model: [
                     { "key": "today", "text": qsTr("Hoy") },
@@ -63,6 +64,7 @@ Item {
                     focusPolicy: Qt.NoFocus
                     highlighted: reportCtrl.preset === modelData.key
                     onClicked: { reportCtrl.setPreset(modelData.key); root.syncFields() }
+                    HelpTip { text: qsTr("Período rápido. «Esta semana» empieza el lunes.") }
                 }
             }
             Item { Layout.fillWidth: true }
@@ -72,6 +74,7 @@ Item {
                 placeholderText: "dd/mm/aaaa"
                 text: reportCtrl.fromText
                 onAccepted: root.applyRange()
+                HelpTip { text: qsTr("Fecha inicial del rango (dd/mm/aaaa). Enter aplica.") }
             }
             Label { text: "–" }
             TextField {
@@ -80,8 +83,9 @@ Item {
                 placeholderText: "dd/mm/aaaa"
                 text: reportCtrl.toText
                 onAccepted: root.applyRange()
+                HelpTip { text: qsTr("Fecha final del rango, incluida (dd/mm/aaaa). Enter aplica.") }
             }
-            Button { text: qsTr("Aplicar"); focusPolicy: Qt.NoFocus; onClicked: root.applyRange() }
+            Button { text: qsTr("Aplicar"); focusPolicy: Qt.NoFocus; onClicked: root.applyRange(); HelpTip { text: qsTr("Muestra el reporte del rango escrito a la izquierda.") } }
         }
 
         // ---- Resumen ----
@@ -90,12 +94,18 @@ Item {
             spacing: 10
             Repeater {
                 model: [
-                    { "label": qsTr("Ventas"), "value": String(root.s.salesCount || 0), "hint": "" },
-                    { "label": qsTr("Total vendido"), "value": root.s.totalText || "", "hint": root.s.discountText !== "0.00" ? qsTr("descuentos %1").arg(root.s.discountText) : "" },
-                    { "label": qsTr("Ganancia"), "value": root.s.profitText || "", "hint": qsTr("margen %1 %").arg(root.s.marginPercent || 0) },
-                    { "label": qsTr("Ticket promedio"), "value": root.s.averageText || "", "hint": "" },
-                    { "label": qsTr("Efectivo"), "value": root.s.cashText || "", "hint": "" },
-                    { "label": qsTr("Transferencias"), "value": root.s.transferText || "", "hint": "" }
+                    { "label": qsTr("Ventas"), "value": String(root.s.salesCount || 0), "hint": "",
+                      "tip": qsTr("Cantidad de ventas del período.") },
+                    { "label": qsTr("Total vendido"), "value": root.s.totalText || "", "hint": root.s.discountText !== "0.00" ? qsTr("descuentos %1").arg(root.s.discountText) : "",
+                      "tip": qsTr("Suma de los totales cobrados, ya restados los descuentos.") },
+                    { "label": qsTr("Ganancia"), "value": root.s.profitText || "", "hint": qsTr("margen %1 %").arg(root.s.marginPercent || 0),
+                      "tip": qsTr("Total vendido menos el costo de lo vendido (costo al momento de cada venta). El margen es la ganancia sobre el total.") },
+                    { "label": qsTr("Ticket promedio"), "value": root.s.averageText || "", "hint": "",
+                      "tip": qsTr("Lo que gasta en promedio cada cliente: total vendido ÷ ventas.") },
+                    { "label": qsTr("Efectivo"), "value": root.s.cashText || "", "hint": "",
+                      "tip": qsTr("Cobrado en efectivo, convertido a la moneda base y sin el vuelto.") },
+                    { "label": qsTr("Transferencias"), "value": root.s.transferText || "", "hint": "",
+                      "tip": qsTr("Cobrado por transferencia.") }
                 ]
                 delegate: Rectangle {
                     // ancho preferido distinto de 0: si no, RowLayout los apila en x = 0
@@ -113,6 +123,7 @@ Item {
                         Label { text: modelData.value; font.pixelSize: Theme.fontSize + 6; font.bold: true }
                         Label { text: modelData.hint; color: Theme.textMuted; font.pixelSize: Theme.fontSmall - 1; visible: text !== "" }
                     }
+                    HelpTip { text: modelData.tip }
                 }
             }
         }
@@ -132,7 +143,7 @@ Item {
 
                 RowLayout {
                     Layout.fillWidth: true
-                    Label { text: qsTr("Ventas por período"); font.bold: true; Layout.fillWidth: true }
+                    Label { text: qsTr("Ventas por período"); font.bold: true; Layout.fillWidth: true; HelpTip { text: qsTr("Barras con el total de cada día, semana o mes. Deja el mouse sobre una barra para ver su detalle.") } }
                     Label {
                         visible: reportCtrl.effectiveGroup !== reportCtrl.groupBy
                         text: qsTr("Agrupado por %1 (rango largo)").arg(reportCtrl.effectiveGroup === "week" ? qsTr("semana") : qsTr("mes"))
@@ -146,6 +157,7 @@ Item {
                             focusPolicy: Qt.NoFocus
                             highlighted: reportCtrl.effectiveGroup === modelData.key
                             onClicked: reportCtrl.setGroupBy(modelData.key)
+                            HelpTip { text: qsTr("Agrupa el gráfico y la tabla. En rangos largos se agrupa solo por semana o por mes.") }
                         }
                     }
                 }
@@ -300,7 +312,7 @@ Item {
                     RowLayout {
                         Layout.fillWidth: true
                         Layout.margins: 6
-                        Label { text: qsTr("Productos más vendidos"); font.bold: true; Layout.leftMargin: 4; Layout.fillWidth: true }
+                        Label { text: qsTr("Productos más vendidos"); font.bold: true; Layout.leftMargin: 4; Layout.fillWidth: true; HelpTip { text: qsTr("Productos vendidos en el período. Importes antes del descuento general de cada venta.") } }
                         Label { text: qsTr("Ordenar:"); color: Theme.textMuted; font.pixelSize: Theme.fontSmall }
                         Repeater {
                             model: [ { "key": "qty", "text": qsTr("Cantidad") }, { "key": "revenue", "text": qsTr("Importe") }, { "key": "profit", "text": qsTr("Ganancia") } ]
@@ -309,6 +321,7 @@ Item {
                                 focusPolicy: Qt.NoFocus
                                 highlighted: reportCtrl.topOrder === modelData.key
                                 onClicked: reportCtrl.setTopOrder(modelData.key)
+                                HelpTip { text: qsTr("Ordena la lista por cantidad vendida, por importe o por ganancia.") }
                             }
                         }
                     }
@@ -370,9 +383,9 @@ Item {
         RowLayout {
             Layout.fillWidth: true
             Label { text: qsTr("Exportar CSV:"); color: Theme.textMuted }
-            Button { text: qsTr("Ventas por período"); focusPolicy: Qt.NoFocus; onClicked: root.exported(reportCtrl.exportPeriods()) }
-            Button { text: qsTr("Productos"); focusPolicy: Qt.NoFocus; onClicked: root.exported(reportCtrl.exportProducts()) }
-            Button { text: qsTr("Detalle de ventas"); focusPolicy: Qt.NoFocus; onClicked: root.exported(reportCtrl.exportSales()) }
+            Button { text: qsTr("Ventas por período"); focusPolicy: Qt.NoFocus; onClicked: root.exported(reportCtrl.exportPeriods()); HelpTip { text: qsTr("Guarda en CSV la tabla de ventas por período (total, descuentos, costo y ganancia).") } }
+            Button { text: qsTr("Productos"); focusPolicy: Qt.NoFocus; onClicked: root.exported(reportCtrl.exportProducts()); HelpTip { text: qsTr("Guarda en CSV los productos vendidos con cantidad, importe, costo y ganancia.") } }
+            Button { text: qsTr("Detalle de ventas"); focusPolicy: Qt.NoFocus; onClicked: root.exported(reportCtrl.exportSales()); HelpTip { text: qsTr("Guarda en CSV una fila por venta: fecha, cajero, totales, costo, ganancia, efectivo y transferencia.") } }
             Button {
                 id: openFolderButton
                 visible: false
@@ -386,9 +399,9 @@ Item {
                 Layout.preferredWidth: 230
                 focusPolicy: Qt.NoFocus
                 model: [qsTr("Excel en español (;)"), qsTr("Estándar (,)")]
-                ToolTip.visible: hovered
-                ToolTip.text: currentIndex === 1 ? qsTr("Separador coma y punto decimal")
-                                                 : qsTr("Separador punto y coma y coma decimal")
+                HelpTip {
+                    text: qsTr("Excel en español: separador punto y coma y coma decimal. Estándar: coma y punto decimal (Excel en inglés, LibreOffice). Si el archivo se abre en una sola columna, usa el otro.")
+                }
                 currentIndex: reportCtrl.csvFormat === "std" ? 1 : 0
                 onActivated: reportCtrl.setCsvFormat(currentIndex === 1 ? "std" : "es")
             }

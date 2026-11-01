@@ -8,8 +8,9 @@ ItemDelegate {
     property bool selected: false
     property string shortcutText: ""
     property bool alert: false
+    property string tip: ""
 
-    implicitHeight: 48
+    implicitHeight: 44
     focusPolicy: Qt.NoFocus
 
     contentItem: RowLayout {
@@ -38,4 +39,6 @@ ItemDelegate {
             visible: control.selected
         }
     }
+
+    HelpTip { text: control.tip }
 }

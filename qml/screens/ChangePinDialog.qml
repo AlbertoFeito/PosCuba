@@ -7,6 +7,8 @@ import "../components"
 // Cambiar el PIN propio.
 Dialog {
     id: dlg
+    onAboutToShow: help.enter("sesion")
+    onAboutToHide: help.leave("sesion")
     property string errorText: ""
     signal done()
 

@@ -27,6 +27,11 @@ Opciones: `-Config Release`, `-Clean`, `-Test` (ejecuta los tests), `-Run`, `-So
 Genera `dist\PosCuba\` (Release, sin consola, con `windeployqt`) y un `.zip`. Se copia la carpeta a la otra PC y se abre `PosCuba.exe`. No requiere instalar nada.
 Si en una PC vieja la ventana sale en negro, usar `PosCuba (modo compatible).bat`.
 
+## Ayuda para el usuario
+- **Manual de usuario** dentro del programa: **F1** (o *Ayuda* en la barra izquierda, o el botón **?** de cada pantalla) lo abre en la sección de la pantalla o ventana que se tiene delante. Tiene índice, buscador (sin importar tildes), enlaces entre secciones y **Guardar en PDF** (`Documentos\PosCuba\Manual_PosCuba.pdf`).
+- **Ayudas emergentes**: al dejar el mouse quieto sobre un botón, campo o columna aparece una explicación corta. Se apagan con la casilla *Mostrar ayudas al pasar el mouse* del manual.
+- El texto del manual está en [`docs/manual`](docs/manual) (un Markdown por sección, compilado en los recursos).
+
 ## Primer uso
 1. Crear el PIN del **Administrador** (4 a 8 dígitos).
 2. **Configuración** (Ctrl+6): datos del negocio, salida del ticket (PDF o impresora), monedas y tasas.
@@ -37,7 +42,7 @@ Si en una PC vieja la ventana sale en negro, usar `PosCuba (modo compatible).bat
 ## Atajos
 | Pantalla | Teclas |
 |---|---|
-| General | Ctrl+1…8 pantallas · Ctrl+L cerrar sesión · Ctrl+Q salir |
+| General | F1 manual · Ctrl+1…9 pantallas · Ctrl+L cerrar sesión · Ctrl+Q salir |
 | Venta | F2 buscar · `3*código` cantidad · F3 cantidad · `+`/`−` ajustar · Supr quitar línea · F7 descuento · F4 cobrar · F10 reimprimir · F8 abrir caja · Esc cancelar |
 | Cobro | Enter confirmar · F6 cambiar moneda del efectivo · Tab siguiente campo · Esc volver |
 | Productos | Ctrl+N nuevo · F2 buscar · Enter/F3 editar · Supr desactivar · Ctrl+S guardar |
@@ -75,8 +80,9 @@ Respaldo automático una vez al día y al cerrar caja; se conservan los últimos
 src/core        dominio y servicios (sin QML)   src/data        SQLite: conexión, migraciones, repositorios
 src/models      modelos de lista para QML        src/controllers objetos expuestos a QML
 src/printing    impresión de tickets             qml/            pantallas, diálogos, tema
-tests/          QtTest (11 suites)               scripts/        build.ps1, deploy.ps1
+tests/          QtTest (12 suites)               scripts/        build.ps1, deploy.ps1
+docs/manual/    manual de usuario (Markdown)
 ```
 
 ## Tests
-`.\scripts\build.ps1 ... -Test` o `ctest` en la carpeta de compilación. Cubren dinero, productos, inventario, cálculo de venta y vuelto, venta completa y cierre de caja, ticket, impresión a PDF, reportes, usuarios, respaldos y monedas.
+`.\scripts\build.ps1 ... -Test` o `ctest` en la carpeta de compilación. Cubren dinero, productos, inventario, cálculo de venta y vuelto, venta completa y cierre de caja, ticket, impresión a PDF, reportes, usuarios, respaldos, monedas y el manual (secciones, enlaces, búsqueda y que cada tema de ayuda que pide la interfaz exista).

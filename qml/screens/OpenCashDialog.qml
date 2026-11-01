@@ -6,6 +6,8 @@ import "../components"
 
 Dialog {
     id: dlg
+    onAboutToShow: help.enter("caja")
+    onAboutToHide: help.leave("caja")
     property string errorText: ""
     signal cashOpened()
 
@@ -51,6 +53,7 @@ Dialog {
                 inputMethodHints: Qt.ImhFormattedNumbersOnly
                 font.pixelSize: Theme.fontSize + 4
                 onAccepted: dlg.tryOpen()
+                HelpTip { text: qsTr("Efectivo en moneda base que hay en la gaveta al empezar, para dar vuelto. Puede ser 0.") }
             }
         }
         Label {

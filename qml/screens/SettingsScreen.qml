@@ -9,6 +9,7 @@ Item {
     id: root
 
     property bool dirty: false
+    readonly property string helpTopic: tabs.currentIndex === 1 ? "monedas" : "configuracion"
 
     function notify(message, isError) {
         var w = ApplicationWindow.window
@@ -70,11 +71,15 @@ Item {
         anchors.margins: 20
         spacing: 12
 
-        TabBar {
-            id: tabs
+        RowLayout {
             Layout.fillWidth: true
-            TabButton { text: qsTr("Negocio y ticket"); focusPolicy: Qt.NoFocus }
-            TabButton { text: qsTr("Monedas y tasas"); focusPolicy: Qt.NoFocus }
+            TabBar {
+                id: tabs
+                Layout.fillWidth: true
+                TabButton { text: qsTr("Negocio y ticket"); focusPolicy: Qt.NoFocus }
+                TabButton { text: qsTr("Monedas y tasas"); focusPolicy: Qt.NoFocus }
+            }
+            HelpButton { topic: root.helpTopic }
         }
 
         StackLayout {
@@ -109,11 +114,11 @@ Item {
                                 columnSpacing: Theme.spacing
                                 rowSpacing: 10
                                 Label { text: qsTr("Nombre *") }
-                                TextField { id: nameField; Layout.fillWidth: true; maximumLength: 80; onTextEdited: root.dirty = true }
+                                TextField { id: nameField; Layout.fillWidth: true; maximumLength: 80; onTextEdited: root.dirty = true; HelpTip { text: qsTr("Nombre del negocio. Sale en la cabecera del ticket. Obligatorio.") } }
                                 Label { text: qsTr("Dirección") }
-                                TextField { id: addressField; Layout.fillWidth: true; maximumLength: 160; onTextEdited: root.dirty = true }
+                                TextField { id: addressField; Layout.fillWidth: true; maximumLength: 160; onTextEdited: root.dirty = true; HelpTip { text: qsTr("Dirección del negocio para el ticket. Opcional.") } }
                                 Label { text: qsTr("Teléfono") }
-                                TextField { id: phoneField; Layout.fillWidth: true; maximumLength: 40; onTextEdited: root.dirty = true }
+                                TextField { id: phoneField; Layout.fillWidth: true; maximumLength: 40; onTextEdited: root.dirty = true; HelpTip { text: qsTr("Teléfono de contacto para el ticket. Opcional.") } }
                             }
 
                             Rectangle { Layout.fillWidth: true; height: 1; color: Theme.border }
@@ -127,8 +132,8 @@ Item {
 
                                 Label { text: qsTr("Salida del ticket") }
                                 RowLayout {
-                                    RadioButton { id: outputPdf; text: qsTr("PDF diario (una venta por hoja)"); checked: true; onToggled: root.dirty = true }
-                                    RadioButton { id: outputPrinter; text: qsTr("Impresora"); onToggled: root.dirty = true }
+                                    RadioButton { id: outputPdf; text: qsTr("PDF diario (una venta por hoja)"); checked: true; onToggled: root.dirty = true; HelpTip { text: qsTr("Sin impresora: todos los tickets del día van a un PDF en Documentos\\PosCuba\\Tickets, una venta por hoja.") } }
+                                    RadioButton { id: outputPrinter; text: qsTr("Impresora"); onToggled: root.dirty = true; HelpTip { text: qsTr("Imprime cada ticket en la impresora de tickets elegida abajo.") } }
                                 }
 
                                 Label { text: qsTr("Impresora"); enabled: outputPrinter.checked }
@@ -140,6 +145,7 @@ Item {
                                         Layout.fillWidth: true
                                         model: root.printerModel()
                                         onActivated: root.dirty = true
+                                        HelpTip { text: qsTr("Impresora con driver de Windows. «Predeterminada del sistema» usa la que Windows tiene por defecto.") }
                                     }
                                     Button {
                                         text: qsTr("Actualizar")
@@ -149,13 +155,14 @@ Item {
                                             var idx = root.printerModel().indexOf(current)
                                             printerCombo.currentIndex = idx > 0 ? idx : 0
                                         }
+                                        HelpTip { text: qsTr("Vuelve a buscar impresoras (si conectaste una con el programa abierto).") }
                                     }
                                 }
 
                                 Label { text: qsTr("Ancho del papel") }
                                 RowLayout {
-                                    RadioButton { id: paper58; text: qsTr("58 mm (32 caracteres)"); checked: true; onToggled: root.dirty = true }
-                                    RadioButton { id: paper80; text: qsTr("80 mm (48 caracteres)"); onToggled: root.dirty = true }
+                                    RadioButton { id: paper58; text: qsTr("58 mm (32 caracteres)"); checked: true; onToggled: root.dirty = true; HelpTip { text: qsTr("Rollo de 58 mm: 32 caracteres por línea.") } }
+                                    RadioButton { id: paper80; text: qsTr("80 mm (48 caracteres)"); onToggled: root.dirty = true; HelpTip { text: qsTr("Rollo de 80 mm: 48 caracteres por línea.") } }
                                 }
 
                                 Label { text: qsTr("Al cobrar") }
@@ -164,6 +171,7 @@ Item {
                                     text: outputPrinter.checked ? qsTr("Imprimir el ticket automáticamente")
                                                                 : qsTr("Agregar cada venta al PDF del día automáticamente")
                                     onToggled: root.dirty = true
+                                    HelpTip { text: qsTr("Valor inicial de la casilla de ticket en la ventana de cobro. Se puede cambiar en cada venta.") }
                                 }
 
                                 Label { text: qsTr("Pie del ticket"); Layout.alignment: Qt.AlignTop }
@@ -175,6 +183,7 @@ Item {
                                     wrapMode: TextArea.Wrap
                                     onTextChanged: if (activeFocus) root.dirty = true
                                     background: Rectangle { color: Theme.surface; border.color: footerField.activeFocus ? Theme.accent : Theme.border; radius: 2 }
+                                    HelpTip { text: qsTr("Texto al final del ticket: agradecimiento, horario, número de cuenta para transferencias…") }
                                 }
                             }
 
@@ -190,7 +199,7 @@ Item {
 
                             RowLayout {
                                 Layout.fillWidth: true
-                                PrimaryButton { text: qsTr("Guardar (Ctrl+S)"); onClicked: root.save() }
+                                PrimaryButton { text: qsTr("Guardar (Ctrl+S)"); onClicked: root.save(); HelpTip { text: qsTr("Guarda los cambios de esta pestaña.") } }
                                 Button {
                                     text: qsTr("Imprimir prueba")
                                     visible: outputPrinter.checked
@@ -200,6 +209,7 @@ Item {
                                         var r = ticketCtrl.printTest()
                                         root.notify(r.ok ? qsTr("Ticket de prueba enviado.") : r.error, !r.ok)
                                     }
+                                    HelpTip { text: qsTr("Imprime un ticket de ejemplo para revisar el ancho y los márgenes.") }
                                 }
                                 Button {
                                     text: qsTr("PDF de prueba")
@@ -214,6 +224,7 @@ Item {
                                             root.notify(r.error, true)
                                         }
                                     }
+                                    HelpTip { text: qsTr("Guarda un ticket de ejemplo en PDF y abre la carpeta.") }
                                 }
                                 Item { Layout.fillWidth: true }
                                 Label { visible: root.dirty; text: qsTr("Cambios sin guardar"); color: Theme.warning }
@@ -226,7 +237,7 @@ Item {
                         Layout.fillHeight: true
                         Layout.preferredWidth: previewBox.width
                         spacing: 8
-                        Label { text: qsTr("Vista previa"); font.bold: true }
+                        Label { text: qsTr("Vista previa"); font.bold: true; HelpTip { text: qsTr("Así sale el ticket con los datos escritos. Cambia mientras escribes.") } }
                         Rectangle {
                             id: previewBox
                             width: preview.implicitWidth + 32

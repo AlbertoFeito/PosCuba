@@ -4,6 +4,8 @@
         <file alias="icons/poscuba.png">resources/icons/poscuba.png</file>
         <file>qml/theme/qmldir</file>
         <file>qml/theme/Theme.qml</file>
+        <file>qml/components/HelpButton.qml</file>
+        <file>qml/components/HelpTip.qml</file>
         <file>qml/components/PrimaryButton.qml</file>
         <file>qml/components/SidebarButton.qml</file>
         <file>qml/components/Toast.qml</file>
@@ -16,6 +18,7 @@
         <file>qml/screens/CloseCashDialog.qml</file>
         <file>qml/screens/CurrenciesPanel.qml</file>
         <file>qml/screens/DiscountDialog.qml</file>
+        <file>qml/screens/HelpDialog.qml</file>
         <file>qml/screens/InventoryScreen.qml</file>
         <file>qml/screens/LoginScreen.qml</file>
         <file>qml/screens/OpenCashDialog.qml</file>

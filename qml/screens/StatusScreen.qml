@@ -2,6 +2,7 @@ import QtQuick 2.12
 import QtQuick.Controls 2.12
 import QtQuick.Layouts 1.12
 import "../theme"
+import "../components"
 
 Item {
     ColumnLayout {
@@ -35,9 +36,9 @@ Item {
                     color: app.dbReady ? Theme.success : Theme.danger
                     font.bold: true
                 }
-                Label { text: qsTr("Archivo:"); font.bold: true }
+                Label { text: qsTr("Archivo:"); font.bold: true; HelpTip { text: qsTr("Ubicación de la base de datos. No la copies con el programa abierto: usa Respaldos.") } }
                 Label { text: app.dbPath; elide: Text.ElideMiddle; Layout.fillWidth: true }
-                Label { text: qsTr("Versión del esquema:"); font.bold: true }
+                Label { text: qsTr("Versión del esquema:"); font.bold: true; HelpTip { text: qsTr("Versión de la estructura de datos. Los respaldos de versiones anteriores se actualizan solos al restaurar.") } }
                 Label { text: app.schemaVersion }
                 Label { text: qsTr("SQLite:"); font.bold: true }
                 Label { text: app.sqliteVersion }

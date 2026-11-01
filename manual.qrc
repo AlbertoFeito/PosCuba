@@ -1,0 +1,19 @@
+<RCC>
+    <qresource prefix="/">
+        <file>docs/manual/01-inicio.md</file>
+        <file>docs/manual/02-sesion.md</file>
+        <file>docs/manual/03-venta.md</file>
+        <file>docs/manual/04-cobro.md</file>
+        <file>docs/manual/05-tickets.md</file>
+        <file>docs/manual/06-caja.md</file>
+        <file>docs/manual/07-productos.md</file>
+        <file>docs/manual/08-inventario.md</file>
+        <file>docs/manual/09-reportes.md</file>
+        <file>docs/manual/10-configuracion.md</file>
+        <file>docs/manual/11-monedas.md</file>
+        <file>docs/manual/12-usuarios.md</file>
+        <file>docs/manual/13-respaldos.md</file>
+        <file>docs/manual/14-atajos.md</file>
+        <file>docs/manual/15-problemas.md</file>
+    </qresource>
+</RCC>

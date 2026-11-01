@@ -8,6 +8,8 @@ import "../components"
 Dialog {
     id: dlg
 
+    onAboutToShow: help.enter("cobro")
+    onAboutToHide: help.leave("cobro")
     property string errorText: ""
     property var preview: ({})
     // Resultado de la ultima venta para la pantalla de venta
@@ -125,6 +127,7 @@ Dialog {
         RowLayout {
             Layout.fillWidth: true
             Label { text: qsTr("Total a cobrar"); color: Theme.textMuted; Layout.fillWidth: true }
+            HelpButton { topic: "cobro" }
             Label {
                 text: saleCtrl.totalText + " " + saleCtrl.baseCurrency
                 font.pixelSize: 32
@@ -151,6 +154,7 @@ Dialog {
                     inputMethodHints: Qt.ImhFormattedNumbersOnly
                     onTextChanged: { dlg.errorText = ""; dlg.updatePreview() }
                     onAccepted: dlg.confirm()
+                    HelpTip { text: qsTr("Lo que entrega el cliente en efectivo, en la moneda elegida a la derecha. Enter confirma la venta.") }
                 }
                 ComboBox {
                     id: currencyCombo
@@ -159,6 +163,7 @@ Dialog {
                     model: saleCtrl.currencies
                     textRole: "code"
                     onCurrentIndexChanged: dlg.updatePreview()
+                    HelpTip { text: qsTr("Moneda del efectivo recibido. F6 pasa a la siguiente. El vuelto siempre se da en la moneda base.") }
                 }
             }
 
@@ -172,6 +177,7 @@ Dialog {
                         text: index === 0 ? qsTr("Exacto %1").arg(fmt.money(modelData)) : fmt.money(modelData)
                         focusPolicy: Qt.NoFocus
                         onClicked: dlg.setCash(modelData)
+                        HelpTip { text: qsTr("Pone este importe en el campo de efectivo (moneda base).") }
                     }
                 }
             }
@@ -202,6 +208,7 @@ Dialog {
                     inputMethodHints: Qt.ImhFormattedNumbersOnly
                     onTextChanged: { dlg.errorText = ""; dlg.updatePreview() }
                     onAccepted: dlg.confirm()
+                    HelpTip { text: qsTr("Importe pagado por transferencia (Transfermóvil, EnZona…). No puede superar el total.") }
                 }
                 TextField {
                     id: referenceField
@@ -209,6 +216,7 @@ Dialog {
                     placeholderText: qsTr("Nº de transacción (opcional)")
                     maximumLength: 60
                     onAccepted: dlg.confirm()
+                    HelpTip { text: qsTr("Número de la transacción, para identificarla luego. Sale en el ticket. Opcional.") }
                 }
             }
         }
@@ -249,18 +257,22 @@ Dialog {
                 text: ticketCtrl.usesPdf ? qsTr("Agregar ticket al PDF del día") : qsTr("Imprimir ticket")
                 focusPolicy: Qt.NoFocus
                 Layout.fillWidth: true
+                HelpTip { text: qsTr("Genera el ticket de esta venta. El valor inicial se cambia en Configuración → Al cobrar.") }
             }
-            Button { text: qsTr("Volver (Esc)"); onClicked: dlg.close() }
+            Button { text: qsTr("Volver (Esc)"); onClicked: dlg.close(); HelpTip { text: qsTr("Regresa al carrito sin cobrar.") } }
             PrimaryButton {
                 text: qsTr("Confirmar venta (Enter)")
                 enabled: dlg.preview.valid === true
                 onClicked: dlg.confirm()
+                HelpTip { text: qsTr("Registra la venta, los pagos y descuenta el stock. Se activa cuando no falta dinero.") }
             }
         }
     }
 
     Dialog {
         id: stockConfirm
+        onAboutToShow: help.enter("cobro")
+        onAboutToHide: help.leave("cobro")
         property var issues: []
 
         title: qsTr("Stock insuficiente")
@@ -303,6 +315,7 @@ Dialog {
                     onClicked: { stockConfirm.close(); dlg.tryCheckout(true) }
                     Keys.onReturnPressed: { stockConfirm.close(); dlg.tryCheckout(true) }
                     Keys.onEnterPressed: { stockConfirm.close(); dlg.tryCheckout(true) }
+                    HelpTip { text: qsTr("Registra la venta y el stock queda negativo. Corrígelo después en Inventario.") }
                 }
             }
         }

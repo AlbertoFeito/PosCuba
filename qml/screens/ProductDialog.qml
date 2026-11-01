@@ -7,6 +7,8 @@ import "../components"
 Dialog {
     id: dlg
 
+    onAboutToShow: help.enter("productos")
+    onAboutToHide: help.leave("productos")
     property int editingId: 0
     property string currentStock: ""
     property string errorText: ""
@@ -106,6 +108,7 @@ Dialog {
                 Layout.fillWidth: true
                 maximumLength: 120
                 onAccepted: dlg.trySave()
+                HelpTip { text: qsTr("Nombre del producto tal como saldrá en el ticket. Obligatorio, hasta 120 caracteres.") }
             }
 
             Label { text: qsTr("Código *") }
@@ -116,11 +119,13 @@ Dialog {
                     Layout.fillWidth: true
                     maximumLength: 32
                     onAccepted: dlg.trySave()
+                    HelpTip { text: qsTr("Código interno, el que se escribe al vender (por ejemplo 3*16). Sin espacios y único.") }
                 }
                 Button {
                     text: qsTr("Generar")
                     focusPolicy: Qt.NoFocus
                     onClicked: codeField.text = productCtrl.nextCode()
+                    HelpTip { text: qsTr("Pone el siguiente número libre: el mayor código numérico existente más 1. Los códigos con letras no cuentan.") }
                 }
             }
 
@@ -132,6 +137,7 @@ Dialog {
                 placeholderText: qsTr("Escanear o escribir (opcional)")
                 // El lector envía Enter al final: pasar al siguiente campo, no guardar.
                 onAccepted: categoryCombo.forceActiveFocus()
+                HelpTip { text: qsTr("Opcional. Escanéalo con el lector. Al vender sirve igual que el código. Debe ser único.") }
             }
 
             Label { text: qsTr("Categoría") }
@@ -142,12 +148,12 @@ Dialog {
                     Layout.fillWidth: true
                     model: productCtrl.categoryModel
                     textRole: "name"
+                    HelpTip { text: qsTr("Agrupa los productos para filtrarlos. Opcional.") }
                 }
                 Button {
                     text: "+"
                     focusPolicy: Qt.NoFocus
-                    ToolTip.visible: hovered
-                    ToolTip.text: qsTr("Nueva categoría")
+                    HelpTip { text: qsTr("Crea una categoría nueva y la elige para este producto.") }
                     onClicked: categoryDialog.openNew()
                 }
             }
@@ -157,6 +163,7 @@ Dialog {
                 id: unitCombo
                 Layout.preferredWidth: 140
                 model: productCtrl.units
+                HelpTip { text: qsTr("u = unidad, kg, lb, l = litro, m = metro. Con kg, lb, l y m se venden cantidades con decimales.") }
             }
 
             Label { text: qsTr("Precio de costo") }
@@ -167,6 +174,7 @@ Dialog {
                 inputMethodHints: Qt.ImhFormattedNumbersOnly
                 color: dlg.costValue < 0 ? Theme.danger : Theme.text
                 onAccepted: dlg.trySave()
+                HelpTip { text: qsTr("Lo que te cuesta cada unidad. Opcional, pero sin él la ganancia de los reportes no es real. También se actualiza al registrar entradas.") }
             }
 
             Label { text: qsTr("Precio de venta *") }
@@ -177,6 +185,7 @@ Dialog {
                 inputMethodHints: Qt.ImhFormattedNumbersOnly
                 color: priceField.text !== "" && dlg.priceValue < 0 ? Theme.danger : Theme.text
                 onAccepted: dlg.trySave()
+                HelpTip { text: qsTr("Precio al cliente en la moneda base. Obligatorio. Cambiarlo no afecta las ventas ya hechas.") }
             }
 
             Label { text: qsTr("Stock mínimo") }
@@ -187,6 +196,7 @@ Dialog {
                     placeholderText: qsTr("Sin alerta")
                     inputMethodHints: Qt.ImhFormattedNumbersOnly
                     onAccepted: dlg.trySave()
+                    HelpTip { text: qsTr("Cuando el stock llega a este número o baja de él, el producto se marca en rojo como stock bajo. Vacío = sin alerta.") }
                 }
                 Label {
                     text: dlg.currentStock !== "" ? qsTr("Stock actual: %1").arg(dlg.currentStock) : ""

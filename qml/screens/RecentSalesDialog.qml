@@ -7,6 +7,8 @@ import "../components"
 // Ultimas ventas: vista previa del ticket, reimpresion y PDF.
 Dialog {
     id: dlg
+    onAboutToShow: help.enter("tickets")
+    onAboutToHide: help.leave("tickets")
     property var sales: []
     property string preview: ""
 
@@ -155,6 +157,7 @@ Dialog {
                     visible: dlg.lastPdf !== ""
                     focusPolicy: Qt.NoFocus
                     onClicked: ticketCtrl.openFolder("")
+                    HelpTip { text: qsTr("Abre la carpeta de los tickets en PDF.") }
                 }
                 Item { Layout.fillWidth: true }
                 Button { text: qsTr("Cerrar (Esc)"); focusPolicy: Qt.NoFocus; onClicked: dlg.close() }
@@ -163,12 +166,14 @@ Dialog {
                     enabled: list.count > 0
                     focusPolicy: Qt.NoFocus
                     onClicked: dlg.pdfSelected()
+                    HelpTip { text: qsTr("Vuelve a generar el PDF del día de la venta elegida, con todas las ventas de ese día (una por hoja).") }
                 }
                 PrimaryButton {
                     text: qsTr("Imprimir (Enter)")
                     enabled: list.count > 0
                     focusPolicy: Qt.NoFocus
                     onClicked: dlg.printSelected()
+                    HelpTip { text: qsTr("Envía el ticket de la venta elegida a la impresora configurada.") }
                 }
             }
         }

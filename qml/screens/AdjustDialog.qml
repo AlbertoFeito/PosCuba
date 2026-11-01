@@ -8,6 +8,8 @@ import "../components"
 Dialog {
     id: dlg
 
+    onAboutToShow: help.enter("inventario")
+    onAboutToHide: help.leave("inventario")
     property var product: ({})
     property string errorText: ""
     signal done()
@@ -84,6 +86,7 @@ Dialog {
                     inputMethodHints: Qt.ImhFormattedNumbersOnly
                     color: text !== "" && dlg.countedValue < 0 ? Theme.danger : Theme.text
                     onAccepted: dlg.trySave()
+                    HelpTip { text: qsTr("La cantidad REAL que hay ahora, no la diferencia. El programa calcula cuánto sube o baja.") }
                 }
                 Label { text: dlg.product.unit || ""; color: Theme.textMuted }
             }
@@ -93,6 +96,7 @@ Dialog {
                 id: reasonCombo
                 Layout.preferredWidth: 260
                 model: inventoryCtrl.adjustReasons
+                HelpTip { text: qsTr("Por qué cambia el stock. Queda en el historial.") }
             }
 
             Label { text: qsTr("Nota") }
@@ -102,6 +106,7 @@ Dialog {
                 maximumLength: 200
                 placeholderText: qsTr("Opcional")
                 onAccepted: dlg.trySave()
+                HelpTip { text: qsTr("Detalle adicional. Opcional.") }
             }
         }
 

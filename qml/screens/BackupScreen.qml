@@ -61,7 +61,8 @@ Item {
             RowLayout {
                 Layout.fillWidth: true
                 Label { text: qsTr("Respaldos"); font.pixelSize: Theme.fontLarge; font.bold: true; Layout.fillWidth: true }
-                PrimaryButton { text: qsTr("Respaldar ahora (Ctrl+B)"); focusPolicy: Qt.NoFocus; onClicked: root.backupNow() }
+                HelpButton { topic: "respaldos" }
+                PrimaryButton { text: qsTr("Respaldar ahora (Ctrl+B)"); focusPolicy: Qt.NoFocus; onClicked: root.backupNow(); HelpTip { text: qsTr("Copia completa de todos los datos en la carpeta elegida. Se puede hacer con la caja abierta.") } }
             }
 
             // ---- Ubicacion ----
@@ -77,6 +78,7 @@ Item {
                     highlighted: backupCtrl.usingDefault
                     focusPolicy: Qt.NoFocus
                     onClicked: { backupCtrl.useDefaultFolder(); root.select(backupCtrl.backups.length > 0 ? 0 : -1) }
+                    HelpTip { text: qsTr("Documentos\\PosCuba\\Respaldos en esta PC. Ahí van también los respaldos automáticos.") }
                 }
                 Repeater {
                     model: backupCtrl.drives
@@ -86,12 +88,14 @@ Item {
                         highlighted: backupCtrl.folder === modelData.folder || backupCtrl.folder.replace(/\\/g, "/") === modelData.folder.replace(/\\/g, "/")
                         focusPolicy: Qt.NoFocus
                         onClicked: { backupCtrl.useDrive(modelData.root); root.select(backupCtrl.backups.length > 0 ? 0 : -1) }
+                        HelpTip { text: qsTr("Guarda en esta unidad (memoria USB o disco), en la carpeta PosCuba_Respaldos.") }
                     }
                 }
                 Button {
                     text: qsTr("Actualizar unidades")
                     focusPolicy: Qt.NoFocus
                     onClicked: backupCtrl.refresh()
+                    HelpTip { text: qsTr("Vuelve a buscar memorias USB conectadas.") }
                 }
             }
             RowLayout {
@@ -101,6 +105,7 @@ Item {
                     Layout.fillWidth: true
                     placeholderText: qsTr("Otra carpeta (ej.: E:\\Respaldos)")
                     onAccepted: useFolderButton.clicked()
+                    HelpTip { text: qsTr("Cualquier otra carpeta, por ejemplo E:\\Respaldos.") }
                 }
                 Button {
                     id: useFolderButton
@@ -249,6 +254,7 @@ Item {
                         text: qsTr("Restaurar este respaldo…")
                         focusPolicy: Qt.NoFocus
                         onClicked: confirmDialog.openNew()
+                        HelpTip { text: qsTr("Reemplaza TODOS los datos actuales por los de este respaldo. Antes guarda una copia de los actuales.") }
                     }
                 }
             }
@@ -270,10 +276,11 @@ Item {
                         id: autoCheck
                         text: qsTr("Al iniciar cada día y al cerrar caja")
                         checked: backupCtrl.autoEnabled
+                        HelpTip { text: qsTr("Respaldo automático la primera vez que se abre el programa cada día y al cerrar caja.") }
                     }
                     RowLayout {
                         Label { text: qsTr("Conservar los últimos") }
-                        SpinBox { id: keepSpin; from: 1; to: 365; value: backupCtrl.keepCount; editable: true }
+                        SpinBox { id: keepSpin; from: 1; to: 365; value: backupCtrl.keepCount; editable: true; HelpTip { text: qsTr("Cuántos respaldos automáticos se guardan; los más viejos se borran. Los manuales nunca se borran.") } }
                     }
                     Label {
                         Layout.preferredWidth: 320
@@ -306,6 +313,8 @@ Item {
 
     Dialog {
         id: confirmDialog
+        onAboutToShow: help.enter("respaldos")
+        onAboutToHide: help.leave("respaldos")
         property string errorText: ""
 
         function openNew() {

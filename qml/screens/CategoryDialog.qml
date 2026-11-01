@@ -6,6 +6,8 @@ import "../components"
 
 Dialog {
     id: dlg
+    onAboutToShow: help.enter("productos")
+    onAboutToHide: help.leave("productos")
     // Sin parametros en la señal: Qt 6 desaconseja inyectarlos en los handlers.
     property int createdId: 0
     signal created()

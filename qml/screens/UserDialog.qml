@@ -7,6 +7,8 @@ import "../components"
 // Crear usuario, editar nombre/rol o asignar un PIN nuevo (mode: "create" | "edit" | "pin").
 Dialog {
     id: dlg
+    onAboutToShow: help.enter("usuarios")
+    onAboutToHide: help.leave("usuarios")
     property string mode: "create"
     property int userId: 0
     property string userName: ""
@@ -94,6 +96,7 @@ Dialog {
                 Layout.fillWidth: true
                 maximumLength: 40
                 onAccepted: dlg.showPin ? pinField.forceActiveFocus() : dlg.trySave()
+                HelpTip { text: qsTr("Nombre que aparece en la pantalla de entrada, los tickets y los reportes. Único.") }
             }
 
             Label { text: qsTr("Rol"); visible: dlg.showIdentity }
@@ -102,6 +105,7 @@ Dialog {
                 visible: dlg.showIdentity
                 Layout.fillWidth: true
                 model: [qsTr("Administrador: acceso completo"), qsTr("Cajero: venta y caja")]
+                HelpTip { text: qsTr("Administrador: todo. Cajero: solo Venta y Caja.") }
             }
 
             Label { text: qsTr("PIN *"); visible: dlg.showPin }
@@ -114,6 +118,7 @@ Dialog {
                 inputMethodHints: Qt.ImhDigitsOnly
                 placeholderText: qsTr("4 a 8 dígitos")
                 onAccepted: confirmField.forceActiveFocus()
+                HelpTip { text: qsTr("Solo números, de 4 a 8 dígitos.") }
             }
 
             Label { text: qsTr("Repetir PIN *"); visible: dlg.showPin }

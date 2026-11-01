@@ -35,29 +35,34 @@ Item {
                 font.bold: true
                 Layout.fillWidth: true
             }
+            HelpButton { topic: "caja" }
             Button {
                 visible: cashCtrl.isOpen
                 text: qsTr("Ingreso")
                 focusPolicy: Qt.NoFocus
                 onClicked: movementDialog.openFor(false)
+                HelpTip { text: qsTr("Registra dinero que entra a la gaveta sin ser una venta (por ejemplo, cambio adicional).") }
             }
             Button {
                 visible: cashCtrl.isOpen
                 text: qsTr("Retiro")
                 focusPolicy: Qt.NoFocus
                 onClicked: movementDialog.openFor(true)
+                HelpTip { text: qsTr("Registra dinero que sale de la gaveta: pago a un proveedor, depósito, gasto. Pide el motivo.") }
             }
             PrimaryButton {
                 visible: cashCtrl.isOpen
                 text: qsTr("Cerrar caja (F9)")
                 focusPolicy: Qt.NoFocus
                 onClicked: closeDialog.openNew()
+                HelpTip { text: qsTr("Arqueo: cuentas el efectivo de cada moneda y el programa calcula si sobra o falta. Hace un respaldo automático.") }
             }
             PrimaryButton {
                 visible: !cashCtrl.isOpen
                 text: qsTr("Abrir caja (F8)")
                 focusPolicy: Qt.NoFocus
                 onClicked: openCashDialog.openNew()
+                HelpTip { text: qsTr("Empieza el turno con el efectivo inicial de la gaveta. Sin caja abierta no se puede vender.") }
             }
         }
 
@@ -98,13 +103,20 @@ Item {
 
                     Repeater {
                         model: [
-                            { "label": qsTr("Ventas"), "value": String(root.s.salesCount || 0) },
-                            { "label": qsTr("Total vendido"), "value": root.s.salesTotalText || "" },
-                            { "label": qsTr("Ganancia estimada"), "value": root.s.profitText || "" },
-                            { "label": qsTr("Transferencias"), "value": root.s.transferText || "" },
-                            { "label": qsTr("Efectivo por ventas"), "value": root.s.cashSalesText || "" },
-                            { "label": qsTr("Ingresos manuales"), "value": root.s.movementsInText || "" },
-                            { "label": qsTr("Retiros"), "value": root.s.movementsOutText || "" }
+                            { "label": qsTr("Ventas"), "value": String(root.s.salesCount || 0),
+                              "tip": qsTr("Cantidad de ventas desde que se abrió la caja.") },
+                            { "label": qsTr("Total vendido"), "value": root.s.salesTotalText || "",
+                              "tip": qsTr("Suma de las ventas en la moneda base, con los descuentos ya restados.") },
+                            { "label": qsTr("Ganancia estimada"), "value": root.s.profitText || "",
+                              "tip": qsTr("Total vendido menos el costo de los productos vendidos. Sin costo cargado, toda la venta cuenta como ganancia.") },
+                            { "label": qsTr("Transferencias"), "value": root.s.transferText || "",
+                              "tip": qsTr("Cobrado por transferencia. No está en la gaveta.") },
+                            { "label": qsTr("Efectivo por ventas"), "value": root.s.cashSalesText || "",
+                              "tip": qsTr("Cobrado en efectivo (todas las monedas convertidas a la base), ya restado el vuelto.") },
+                            { "label": qsTr("Ingresos manuales"), "value": root.s.movementsInText || "",
+                              "tip": qsTr("Dinero agregado a la gaveta con el botón Ingreso.") },
+                            { "label": qsTr("Retiros"), "value": root.s.movementsOutText || "",
+                              "tip": qsTr("Dinero sacado de la gaveta con el botón Retiro.") }
                         ]
                         delegate: Rectangle {
                             Layout.fillWidth: true
@@ -118,6 +130,7 @@ Item {
                                 Label { text: modelData.label; color: Theme.textMuted; font.pixelSize: Theme.fontSmall }
                                 Label { text: modelData.value; font.pixelSize: Theme.fontSize + 5; font.bold: true }
                             }
+                            HelpTip { text: modelData.tip }
                         }
                     }
                 }
@@ -126,6 +139,7 @@ Item {
                     visible: cashCtrl.isOpen
                     text: qsTr("Efectivo esperado en la gaveta")
                     font.bold: true
+                    HelpTip { text: qsTr("Lo que debería haber en la gaveta por moneda: fondo inicial + efectivo de ventas − vuelto + ingresos − retiros.") }
                 }
                 Flow {
                     visible: cashCtrl.isOpen
@@ -151,7 +165,7 @@ Item {
         }
 
         // ---- Historial ----
-        Label { text: qsTr("Cierres anteriores"); font.bold: true; font.pixelSize: Theme.fontSize + 1 }
+        Label { text: qsTr("Cierres anteriores"); font.bold: true; font.pixelSize: Theme.fontSize + 1; HelpTip { text: qsTr("Historial de cierres. Diferencia en verde: cuadró; en rojo: faltó dinero; en amarillo: sobró.") } }
 
         Rectangle {
             Layout.fillWidth: true

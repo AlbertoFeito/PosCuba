@@ -37,7 +37,8 @@ Item {
         RowLayout {
             Layout.fillWidth: true
             Label { text: qsTr("Usuarios"); font.pixelSize: Theme.fontLarge; font.bold: true; Layout.fillWidth: true }
-            PrimaryButton { text: qsTr("Nuevo usuario (Ctrl+N)"); focusPolicy: Qt.NoFocus; onClicked: userDialog.openCreate() }
+            HelpButton { topic: "usuarios" }
+            PrimaryButton { text: qsTr("Nuevo usuario (Ctrl+N)"); focusPolicy: Qt.NoFocus; onClicked: userDialog.openCreate(); HelpTip { text: qsTr("Crea un cajero o administrador con su PIN.") } }
         }
 
         Label {
@@ -132,18 +133,21 @@ Item {
                 enabled: root.current() !== null
                 focusPolicy: Qt.NoFocus
                 onClicked: userDialog.openEdit(root.current())
+                HelpTip { text: qsTr("Cambia el nombre o el rol (también Enter o doble clic).") }
             }
             Button {
                 text: qsTr("Asignar PIN")
                 enabled: root.current() !== null
                 focusPolicy: Qt.NoFocus
                 onClicked: userDialog.openPin(root.current())
+                HelpTip { text: qsTr("Pone un PIN nuevo sin conocer el anterior: para quien lo olvidó.") }
             }
             Button {
                 text: root.current() && !root.current().active ? qsTr("Reactivar") : qsTr("Desactivar")
                 enabled: root.current() !== null
                 focusPolicy: Qt.NoFocus
                 onClicked: root.toggleActive()
+                HelpTip { text: qsTr("Un usuario desactivado no puede entrar, pero su historial se conserva. Siempre debe quedar un administrador activo.") }
             }
         }
     }

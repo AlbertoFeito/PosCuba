@@ -8,6 +8,8 @@ import "../components"
 Dialog {
     id: dlg
 
+    onAboutToShow: help.enter("inventario")
+    onAboutToHide: help.leave("inventario")
     property var product: ({})
     property string errorText: ""
     signal done()
@@ -85,6 +87,7 @@ Dialog {
                     inputMethodHints: Qt.ImhFormattedNumbersOnly
                     color: text !== "" && dlg.qtyValue < 0 ? Theme.danger : Theme.text
                     onAccepted: dlg.trySave()
+                    HelpTip { text: qsTr("Cantidad que entra, en la unidad del producto. Debe ser mayor que cero.") }
                 }
                 Label { text: dlg.product.unit || ""; color: Theme.textMuted }
             }
@@ -96,6 +99,7 @@ Dialog {
                 placeholderText: qsTr("Opcional")
                 inputMethodHints: Qt.ImhFormattedNumbersOnly
                 onAccepted: dlg.trySave()
+                HelpTip { text: qsTr("Lo que costó cada unidad en esta compra. Opcional; viene con el costo actual.") }
             }
 
             Item { width: 1; height: 1 }
@@ -103,6 +107,7 @@ Dialog {
                 id: updateCost
                 text: qsTr("Actualizar el costo del producto")
                 enabled: costField.text.trim() !== ""
+                HelpTip { text: qsTr("Si está marcada, este costo pasa a ser el costo del producto y se usa en la ganancia de las ventas siguientes.") }
             }
 
             Label { text: qsTr("Proveedor / nota") }
@@ -111,6 +116,7 @@ Dialog {
                 Layout.fillWidth: true
                 maximumLength: 200
                 onAccepted: dlg.trySave()
+                HelpTip { text: qsTr("Proveedor, número de factura u otra nota. Opcional; sale en el historial.") }
             }
         }
 

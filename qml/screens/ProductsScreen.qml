@@ -93,10 +93,12 @@ Item {
                 font.bold: true
                 Layout.fillWidth: true
             }
+            HelpButton { topic: "productos" }
             PrimaryButton {
                 text: qsTr("Nuevo producto (Ctrl+N)")
                 focusPolicy: Qt.NoFocus
                 onClicked: productDialog.openNew()
+                HelpTip { text: qsTr("Crea un producto. El código se propone solo; nombre, código y precio de venta son obligatorios.") }
             }
         }
 
@@ -129,6 +131,7 @@ Item {
                     }
                 }
                 Keys.onEscapePressed: searchField.text = ""
+                HelpTip { text: qsTr("Filtra mientras escribes. Con el lector de barras, escanea: si hay un solo resultado se abre para editar. ↓ baja a la lista, Esc borra.") }
             }
 
             ComboBox {
@@ -138,6 +141,7 @@ Item {
                 textRole: "name"
                 focusPolicy: Qt.NoFocus
                 onActivated: productCtrl.categoryFilter = productCtrl.categoryFilterModel.idAt(currentIndex)
+                HelpTip { text: qsTr("Muestra solo los productos de una categoría.") }
             }
 
             CheckBox {
@@ -145,6 +149,7 @@ Item {
                 focusPolicy: Qt.NoFocus
                 checked: productCtrl.showInactive
                 onToggled: productCtrl.showInactive = checked
+                HelpTip { text: qsTr("Incluye los productos desactivados (atenuados) para poder reactivarlos.") }
             }
         }
 
@@ -174,9 +179,9 @@ Item {
                         Label { width: root.colCode; height: parent.height; verticalAlignment: Text.AlignVCenter; text: qsTr("Código"); font.bold: true; color: Theme.textMuted }
                         Label { width: list.nameWidth; height: parent.height; verticalAlignment: Text.AlignVCenter; text: qsTr("Nombre"); font.bold: true; color: Theme.textMuted }
                         Label { width: root.colCategory; height: parent.height; verticalAlignment: Text.AlignVCenter; text: qsTr("Categoría"); font.bold: true; color: Theme.textMuted }
-                        Label { width: root.colMoney; height: parent.height; verticalAlignment: Text.AlignVCenter; horizontalAlignment: Text.AlignRight; text: qsTr("Costo"); font.bold: true; color: Theme.textMuted }
+                        Label { width: root.colMoney; height: parent.height; verticalAlignment: Text.AlignVCenter; horizontalAlignment: Text.AlignRight; text: qsTr("Costo"); font.bold: true; color: Theme.textMuted; HelpTip { text: qsTr("Precio de costo: lo que te cuesta a ti. Se usa para calcular la ganancia.") } }
                         Label { width: root.colMoney; height: parent.height; verticalAlignment: Text.AlignVCenter; horizontalAlignment: Text.AlignRight; text: qsTr("Precio"); font.bold: true; color: Theme.textMuted }
-                        Label { width: root.colStock; height: parent.height; verticalAlignment: Text.AlignVCenter; horizontalAlignment: Text.AlignRight; text: qsTr("Stock"); font.bold: true; color: Theme.textMuted }
+                        Label { width: root.colStock; height: parent.height; verticalAlignment: Text.AlignVCenter; horizontalAlignment: Text.AlignRight; text: qsTr("Stock"); font.bold: true; color: Theme.textMuted; HelpTip { text: qsTr("Existencia actual. En rojo si está en el stock mínimo o por debajo. Se cambia en Inventario.") } }
                     }
                 }
 
@@ -277,12 +282,14 @@ Item {
                 enabled: list.currentIndex >= 0 && list.count > 0
                 focusPolicy: Qt.NoFocus
                 onClicked: root.editCurrent()
+                HelpTip { text: qsTr("Edita el producto elegido (también Enter, F3 o doble clic).") }
             }
             Button {
                 text: list.currentItem && !list.currentItem.isActive ? qsTr("Reactivar") : qsTr("Desactivar")
                 enabled: list.currentIndex >= 0 && list.count > 0
                 focusPolicy: Qt.NoFocus
                 onClicked: root.toggleActiveCurrent()
+                HelpTip { text: qsTr("Desactivar lo quita de la venta y de las búsquedas sin borrar su historial. Reactivar lo devuelve.") }
             }
         }
     }
@@ -298,6 +305,8 @@ Item {
 
     Dialog {
         id: confirmDialog
+        onAboutToShow: help.enter("productos")
+        onAboutToHide: help.leave("productos")
         property int productId: 0
         property string productName: ""
 

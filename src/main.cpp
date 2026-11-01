@@ -13,6 +13,7 @@
 #include "controllers/BackupController.h"
 #include "controllers/CashController.h"
 #include "controllers/CurrencyController.h"
+#include "controllers/HelpController.h"
 #include "controllers/InventoryController.h"
 #include "controllers/ProductController.h"
 #include "controllers/ReportController.h"
@@ -58,6 +59,7 @@ int main(int argc, char *argv[])
     UserController userController(controller.userService(), controller.session());
     BackupController backupController(Database::connection(), controller.session());
     CurrencyController currencyController(Database::connection(), controller.session());
+    HelpController helpController(Database::connection());
     QObject::connect(&currencyController, &CurrencyController::currenciesEdited, &app, [&]() {
         saleController.refreshCurrencies();
         ticketController.reloadSettings();
@@ -89,6 +91,7 @@ int main(int argc, char *argv[])
         ticketController.reloadSettings();
         reportController.refresh();
         currencyController.refresh();
+        helpController.reloadSettings();
         controller.reloadAfterRestore();
     });
     QObject::connect(&cashController, &CashController::sessionOpenedOrClosed,
@@ -115,6 +118,7 @@ int main(int argc, char *argv[])
     ctx->setContextProperty(QStringLiteral("userCtrl"), &userController);
     ctx->setContextProperty(QStringLiteral("backupCtrl"), &backupController);
     ctx->setContextProperty(QStringLiteral("currencyCtrl"), &currencyController);
+    ctx->setContextProperty(QStringLiteral("help"), &helpController);
     engine.load(QUrl(QStringLiteral("qrc:/qml/main.qml")));
     if (engine.rootObjects().isEmpty())
         return -1;

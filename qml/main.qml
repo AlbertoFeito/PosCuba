@@ -28,6 +28,17 @@ ApplicationWindow {
                                      : (!app.isAdmin && currentPage !== pageSale && currentPage !== pageCash)
                                        ? pageSale : currentPage
 
+    // Seccion del manual para lo que se ve ahora (F1). Los dialogos la cambian con help.enter/leave.
+    readonly property string pageTopic: !app.dbReady ? "problemas"
+                                        : !app.loggedIn ? (app.needsSetup ? "inicio" : "sesion")
+                                        : [ "venta", "productos", "inventario", "caja", "reportes",
+                                            settingsScreen.helpTopic, "usuarios", "respaldos", "problemas" ][shownPage]
+    onPageTopicChanged: help.pageTopic = pageTopic
+
+    function openHelp(topic) {
+        helpDialog.openAt(topic && topic !== "" ? topic : help.topic)
+    }
+
     function showToast(message, isError) {
         toast.show(message, isError)
     }
@@ -71,6 +82,7 @@ ApplicationWindow {
     palette.toolTipText: Theme.text
 
     Component.onCompleted: {
+        help.pageTopic = pageTopic
         Theme.dark = Qt.binding(function() { return app.darkTheme })
         // placeholderText solo existe en el palette de Qt 6; en Qt 5 Fusion lo deriva del color del texto.
         if (palette.placeholderText !== undefined)
@@ -78,6 +90,13 @@ ApplicationWindow {
     }
 
     Shortcut { sequence: "Ctrl+Q"; onActivated: Qt.quit() }
+    // ApplicationShortcut: funciona tambien con un dialogo abierto y abre su seccion.
+    Shortcut {
+        sequence: "F1"
+        context: Qt.ApplicationShortcut
+        enabled: !helpDialog.visible
+        onActivated: window.openHelp("")
+    }
     Shortcut { sequence: "Ctrl+1"; enabled: window.working; onActivated: window.go(window.pageSale) }
     Shortcut { sequence: "Ctrl+2"; enabled: window.admin; onActivated: window.go(window.pageProducts) }
     Shortcut { sequence: "Ctrl+3"; enabled: window.admin; onActivated: window.go(window.pageInventory) }
@@ -116,6 +135,7 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     visible: window.working
                     text: qsTr("Venta")
+                    tip: qsTr("Cobrar a los clientes: buscar productos, armar el carrito, aplicar descuentos y cobrar en efectivo, transferencia o mixto.")
                     shortcutText: "Ctrl+1"
                     selected: window.currentPage === window.pageSale
                     onClicked: window.go(window.pageSale)
@@ -124,6 +144,7 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     visible: window.admin
                     text: qsTr("Productos")
+                    tip: qsTr("Catálogo: crear y editar productos, precios, costos, códigos, categorías y stock mínimo.")
                     shortcutText: "Ctrl+2"
                     selected: window.currentPage === window.pageProducts
                     onClicked: window.go(window.pageProducts)
@@ -133,6 +154,7 @@ ApplicationWindow {
                     visible: window.admin
                     text: inventoryCtrl.lowStockCount > 0 ? qsTr("Inventario (%1)").arg(inventoryCtrl.lowStockCount)
                                                           : qsTr("Inventario")
+                    tip: qsTr("Entradas de mercancía, ajustes de stock y el historial de movimientos de cada producto. En rojo cuando hay productos con stock bajo.")
                     alert: inventoryCtrl.lowStockCount > 0
                     shortcutText: "Ctrl+3"
                     selected: window.currentPage === window.pageInventory
@@ -142,6 +164,7 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     visible: window.working
                     text: cashCtrl.isOpen ? qsTr("Caja (abierta)") : qsTr("Caja (cerrada)")
+                    tip: qsTr("Abrir y cerrar la caja (arqueo), registrar ingresos y retiros de efectivo y ver los cierres anteriores.")
                     shortcutText: "Ctrl+4"
                     selected: window.currentPage === window.pageCash
                     onClicked: window.go(window.pageCash)
@@ -150,6 +173,7 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     visible: window.admin
                     text: qsTr("Reportes")
+                    tip: qsTr("Ventas por día, semana o mes, productos más vendidos, ganancia y exportación a Excel (CSV).")
                     shortcutText: "Ctrl+5"
                     selected: window.currentPage === window.pageReports
                     onClicked: window.go(window.pageReports)
@@ -161,6 +185,7 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     visible: window.admin
                     text: qsTr("Configuración")
+                    tip: qsTr("Datos del negocio, formato y salida del ticket (PDF o impresora), monedas y tasas de cambio.")
                     shortcutText: "Ctrl+6"
                     selected: window.currentPage === window.pageSettings
                     onClicked: window.go(window.pageSettings)
@@ -169,6 +194,7 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     visible: window.admin
                     text: qsTr("Usuarios")
+                    tip: qsTr("Crear cajeros y administradores, asignar PIN y desactivar usuarios.")
                     shortcutText: "Ctrl+7"
                     selected: window.currentPage === window.pageUsers
                     onClicked: window.go(window.pageUsers)
@@ -177,6 +203,7 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     visible: window.admin
                     text: qsTr("Respaldos")
+                    tip: qsTr("Copias de seguridad de todos los datos: hacerlas, guardarlas en una USB y restaurarlas.")
                     shortcutText: "Ctrl+8"
                     selected: window.currentPage === window.pageBackups
                     onClicked: window.go(window.pageBackups)
@@ -185,6 +212,7 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     visible: window.admin || !app.dbReady
                     text: qsTr("Estado")
+                    tip: qsTr("Información técnica: ubicación de la base de datos y versiones. Útil si hay que pedir soporte.")
                     shortcutText: "Ctrl+9"
                     selected: window.currentPage === window.pageStatus
                     onClicked: window.go(window.pageStatus)
@@ -214,19 +242,29 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     visible: window.working
                     text: qsTr("Cambiar mi PIN")
+                    tip: qsTr("Cambia el PIN con el que entras. Te pedirá el PIN actual.")
                     onClicked: changePinDialog.openNew()
                 }
                 SidebarButton {
                     Layout.fillWidth: true
                     visible: window.working
                     text: qsTr("Cerrar sesión")
+                    tip: qsTr("Vuelve a la pantalla de entrada para que otro usuario use la caja. La caja sigue abierta; el carrito en curso se vacía.")
                     shortcutText: "Ctrl+L"
                     onClicked: window.logout()
+                }
+                SidebarButton {
+                    Layout.fillWidth: true
+                    text: qsTr("Ayuda")
+                    shortcutText: "F1"
+                    tip: qsTr("Manual de usuario. F1 lo abre en la sección de la pantalla o ventana que tienes delante.")
+                    onClicked: window.openHelp("")
                 }
                 Switch {
                     Layout.leftMargin: 8
                     text: qsTr("Tema oscuro")
                     focusPolicy: Qt.NoFocus
+                    HelpTip { text: qsTr("Colores oscuros, más cómodos con poca luz. Se recuerda al volver a abrir el programa.") }
                     checked: app.darkTheme
                     onToggled: app.darkTheme = checked
                 }
@@ -254,7 +292,7 @@ ApplicationWindow {
             InventoryScreen { }
             CashScreen { }
             ReportsScreen { }
-            SettingsScreen { }
+            SettingsScreen { id: settingsScreen }
             UsersScreen { }
             BackupScreen { }
             StatusScreen { }
@@ -270,6 +308,8 @@ ApplicationWindow {
             window.showToast(qsTr("Hola, %1.").arg(app.userName), false)
         }
     }
+
+    HelpDialog { id: helpDialog }
 
     ChangePinDialog {
         id: changePinDialog

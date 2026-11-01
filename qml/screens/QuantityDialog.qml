@@ -7,6 +7,8 @@ import "../components"
 // Cambia la cantidad de una linea del carrito.
 Dialog {
     id: dlg
+    onAboutToShow: help.enter("venta")
+    onAboutToHide: help.leave("venta")
     property int row: -1
     property string productName: ""
     property string unit: ""
@@ -55,6 +57,7 @@ Dialog {
                 font.pixelSize: Theme.fontSize + 6
                 inputMethodHints: Qt.ImhFormattedNumbersOnly
                 onAccepted: dlg.apply()
+                HelpTip { text: qsTr("Cantidad nueva de la línea. Acepta decimales (0.5) para kg, lb, l o m.") }
             }
             Label { text: dlg.unit; color: Theme.textMuted; font.pixelSize: Theme.fontSize + 2 }
         }

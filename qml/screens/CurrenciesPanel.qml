@@ -125,7 +125,7 @@ Item {
                             anchors.rightMargin: 12
                             Label { width: 80; height: parent.height; verticalAlignment: Text.AlignVCenter; text: qsTr("Código"); font.bold: true; color: Theme.textMuted }
                             Label { width: list.colName; height: parent.height; verticalAlignment: Text.AlignVCenter; text: qsTr("Nombre"); font.bold: true; color: Theme.textMuted }
-                            Label { width: 190; height: parent.height; verticalAlignment: Text.AlignVCenter; horizontalAlignment: Text.AlignRight; text: qsTr("Tasa"); font.bold: true; color: Theme.textMuted }
+                            Label { width: 190; height: parent.height; verticalAlignment: Text.AlignVCenter; horizontalAlignment: Text.AlignRight; text: qsTr("Tasa"); font.bold: true; color: Theme.textMuted; HelpTip { text: qsTr("Tasa actual: cuántas unidades de la moneda base vale 1 unidad de la moneda.") } }
                             Label { width: 110; height: parent.height; verticalAlignment: Text.AlignVCenter; horizontalAlignment: Text.AlignRight; text: qsTr("Estado"); font.bold: true; color: Theme.textMuted }
                         }
                     }
@@ -170,7 +170,7 @@ Item {
                 Button { text: "USD"; focusPolicy: Qt.NoFocus; onClicked: root.newCurrency("USD", qsTr("Dólar estadounidense"), "US$") }
                 Button { text: "MLC"; focusPolicy: Qt.NoFocus; onClicked: root.newCurrency("MLC", qsTr("Moneda libremente convertible"), "MLC") }
                 Button { text: "EUR"; focusPolicy: Qt.NoFocus; onClicked: root.newCurrency("EUR", qsTr("Euro"), "€") }
-                Button { text: qsTr("Otra"); focusPolicy: Qt.NoFocus; onClicked: root.newCurrency("", "", "") }
+                Button { text: qsTr("Otra"); focusPolicy: Qt.NoFocus; onClicked: root.newCurrency("", "", ""); HelpTip { text: qsTr("Agregar otra moneda escribiendo su código, nombre y símbolo.") } }
             }
         }
 
@@ -207,11 +207,12 @@ Item {
                         readOnly: root.editing
                         font.capitalization: Font.AllUppercase
                         onAccepted: nameField.forceActiveFocus()
+                        HelpTip { text: qsTr("Código de 3 letras (USD, MLC, EUR). No se puede cambiar después de crear la moneda.") }
                     }
                     Label { text: qsTr("Nombre") }
-                    TextField { id: nameField; Layout.fillWidth: true; maximumLength: 40; onAccepted: symbolField.forceActiveFocus() }
+                    TextField { id: nameField; Layout.fillWidth: true; maximumLength: 40; onAccepted: symbolField.forceActiveFocus(); HelpTip { text: qsTr("Nombre de la moneda.") } }
                     Label { text: qsTr("Símbolo") }
-                    TextField { id: symbolField; Layout.fillWidth: true; maximumLength: 5; onAccepted: rateField.forceActiveFocus() }
+                    TextField { id: symbolField; Layout.fillWidth: true; maximumLength: 5; onAccepted: rateField.forceActiveFocus(); HelpTip { text: qsTr("Símbolo corto para mostrar importes, por ejemplo US$.") } }
                     Label { text: qsTr("Tasa") }
                     RowLayout {
                         Layout.fillWidth: true
@@ -224,6 +225,7 @@ Item {
                             inputMethodHints: Qt.ImhFormattedNumbersOnly
                             placeholderText: "400"
                             onAccepted: root.save()
+                            HelpTip { text: qsTr("Cuántas unidades de la moneda base vale 1 unidad de esta moneda. Cambiarla no altera las ventas anteriores.") }
                         }
                         Label { text: currencyCtrl.baseCode }
                     }
@@ -232,6 +234,7 @@ Item {
                         id: activeCheck
                         text: qsTr("Aceptar al cobrar")
                         enabled: !root.editingBase
+                        HelpTip { text: qsTr("Si está marcada, la moneda aparece en el cobro (F6). Desmárcala para dejar de aceptarla sin perder su historial.") }
                     }
                 }
 
@@ -255,6 +258,7 @@ Item {
                             root.notify(r.ok ? qsTr("Moneda base cambiada. Revisa las tasas de las demás monedas.") : r.error, !r.ok)
                             if (r.ok) root.edit(0)
                         }
+                        HelpTip { text: qsTr("Hace de esta la moneda de precios y reportes. Solo es posible mientras no haya ventas.") }
                     }
                 }
 

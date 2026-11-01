@@ -6,6 +6,8 @@ import "../components"
 
 Dialog {
     id: dlg
+    onAboutToShow: help.enter("venta")
+    onAboutToHide: help.leave("venta")
     property string errorText: ""
 
     function openNew() {
@@ -35,8 +37,8 @@ Dialog {
 
         Label { text: qsTr("Subtotal: %1").arg(saleCtrl.subtotalText); color: Theme.textMuted }
         RowLayout {
-            RadioButton { id: amountRadio; text: qsTr("Importe"); checked: true; focusPolicy: Qt.NoFocus }
-            RadioButton { id: percentRadio; text: qsTr("Porcentaje (%)"); focusPolicy: Qt.NoFocus }
+            RadioButton { id: amountRadio; text: qsTr("Importe"); checked: true; focusPolicy: Qt.NoFocus; HelpTip { text: qsTr("Descuento de un importe fijo en la moneda base, por ejemplo 50.00.") } }
+            RadioButton { id: percentRadio; text: qsTr("Porcentaje (%)"); focusPolicy: Qt.NoFocus; HelpTip { text: qsTr("Descuento como porcentaje del subtotal, por ejemplo 10.") } }
         }
         TextField {
             id: valueField
@@ -49,6 +51,7 @@ Dialog {
                 if (amountRadio.checked) percentRadio.checked = true
                 else amountRadio.checked = true
             }
+            HelpTip { text: qsTr("Valor del descuento. Tab cambia entre importe y porcentaje. No puede superar el subtotal.") }
         }
         Label {
             text: qsTr("Tab: cambiar entre importe y porcentaje")
@@ -64,7 +67,7 @@ Dialog {
         }
         RowLayout {
             Layout.fillWidth: true
-            Button { text: qsTr("Quitar descuento"); onClicked: dlg.apply("") }
+            Button { text: qsTr("Quitar descuento"); onClicked: dlg.apply(""); HelpTip { text: qsTr("Elimina el descuento de esta venta.") } }
             Item { Layout.fillWidth: true }
             Button { text: qsTr("Cancelar (Esc)"); onClicked: dlg.close() }
             PrimaryButton { text: qsTr("Aplicar (Enter)"); onClicked: dlg.apply(valueField.text) }

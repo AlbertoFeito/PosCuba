@@ -7,6 +7,8 @@ import "../components"
 // Cierre con arqueo: efectivo contado por moneda frente al esperado.
 Dialog {
     id: dlg
+    onAboutToShow: help.enter("caja")
+    onAboutToHide: help.leave("caja")
     property string errorText: ""
     property var counted: ({})        // moneda -> texto
     property var resultData: ({})
@@ -67,9 +69,9 @@ Dialog {
             RowLayout {
                 Layout.fillWidth: true
                 Label { text: qsTr("Moneda"); font.bold: true; color: Theme.textMuted; Layout.preferredWidth: 70 }
-                Label { text: qsTr("Esperado"); font.bold: true; color: Theme.textMuted; Layout.preferredWidth: 120; horizontalAlignment: Text.AlignRight }
+                Label { text: qsTr("Esperado"); font.bold: true; color: Theme.textMuted; Layout.preferredWidth: 120; horizontalAlignment: Text.AlignRight; HelpTip { text: qsTr("Lo que debería haber según las ventas, el fondo inicial, los ingresos y los retiros.") } }
                 Label { text: qsTr("Contado"); font.bold: true; color: Theme.textMuted; Layout.fillWidth: true }
-                Label { text: qsTr("Diferencia"); font.bold: true; color: Theme.textMuted; Layout.preferredWidth: 110; horizontalAlignment: Text.AlignRight }
+                Label { text: qsTr("Diferencia"); font.bold: true; color: Theme.textMuted; Layout.preferredWidth: 110; horizontalAlignment: Text.AlignRight; HelpTip { text: qsTr("Contado menos esperado. Negativo (rojo): falta dinero. Positivo (amarillo): sobra.") } }
             }
 
             Repeater {
@@ -95,6 +97,7 @@ Dialog {
                             else
                                 dlg.tryClose()
                         }
+                        HelpTip { text: qsTr("Total de billetes y monedas contados de esta moneda. Enter pasa a la siguiente; en la última, cierra la caja.") }
                     }
                     Label {
                         Layout.preferredWidth: 110
@@ -118,7 +121,7 @@ Dialog {
             RowLayout {
                 Layout.alignment: Qt.AlignRight
                 Button { text: qsTr("Cancelar (Esc)"); onClicked: dlg.close() }
-                PrimaryButton { text: qsTr("Cerrar caja"); onClicked: dlg.tryClose() }
+                PrimaryButton { text: qsTr("Cerrar caja"); onClicked: dlg.tryClose(); HelpTip { text: qsTr("Registra el arqueo y cierra la caja. Después hay que abrirla otra vez para vender.") } }
             }
         }
 

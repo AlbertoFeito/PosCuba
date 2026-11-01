@@ -7,6 +7,8 @@ import "../components"
 // Ingreso o retiro manual de efectivo (moneda base).
 Dialog {
     id: dlg
+    onAboutToShow: help.enter("caja")
+    onAboutToHide: help.leave("caja")
     property bool withdrawal: true
     property string errorText: ""
     signal done()
@@ -51,6 +53,7 @@ Dialog {
                 placeholderText: "0.00"
                 inputMethodHints: Qt.ImhFormattedNumbersOnly
                 onAccepted: reasonField.forceActiveFocus()
+                HelpTip { text: qsTr("Importe en la moneda base. En un retiro no puede ser mayor que el efectivo que hay en la gaveta.") }
             }
             Label { text: qsTr("Motivo *") }
             TextField {
@@ -59,6 +62,7 @@ Dialog {
                 maximumLength: 120
                 placeholderText: dlg.withdrawal ? qsTr("Ej.: pago a proveedor, depósito") : qsTr("Ej.: cambio adicional")
                 onAccepted: dlg.trySave()
+                HelpTip { text: qsTr("Para qué fue el dinero. Sale en el historial de la caja.") }
             }
         }
         Label {

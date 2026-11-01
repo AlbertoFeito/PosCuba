@@ -114,6 +114,7 @@ Rectangle {
                 inputMethodHints: Qt.ImhDigitsOnly
                 placeholderText: qsTr("PIN nuevo (4 a 8 dígitos)")
                 onAccepted: setupConfirm.forceActiveFocus()
+                HelpTip { text: qsTr("PIN del administrador: de 4 a 8 dígitos, solo números. Anótalo en un lugar seguro.") }
             }
             TextField {
                 id: setupConfirm
@@ -195,6 +196,7 @@ Rectangle {
                 // ← → cambian de usuario sin usar el raton
                 Keys.onLeftPressed: root.selectUser((root.selectedIndex + root.users.length - 1) % Math.max(1, root.users.length))
                 Keys.onRightPressed: root.selectUser((root.selectedIndex + 1) % Math.max(1, root.users.length))
+                HelpTip { text: qsTr("Escribe tu PIN y pulsa Enter. Tras 5 errores seguidos hay que esperar 30 segundos.") }
             }
 
             // Teclado numerico en pantalla
@@ -241,6 +243,19 @@ Rectangle {
             color: Theme.danger
             wrapMode: Text.Wrap
             font.bold: true
+        }
+    }
+
+    Button {
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        anchors.margins: 12
+        text: qsTr("Ayuda (F1)")
+        focusPolicy: Qt.NoFocus
+        onClicked: {
+            var w = ApplicationWindow.window
+            if (w && w.openHelp)
+                w.openHelp("")
         }
     }
 

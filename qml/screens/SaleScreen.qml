@@ -242,6 +242,7 @@ Item {
                         }
                     }
                 }
+                HelpTip { text: qsTr("Escanea el código de barras o escribe el código y pulsa Enter. Si escribes parte del nombre aparece una lista: ↓ para elegir, Enter para agregar. Para varias unidades: 3*código. Con el buscador vacío, + y − cambian la cantidad de la línea elegida y Supr la quita.") }
             }
 
             Rectangle {
@@ -267,9 +268,9 @@ Item {
                             anchors.rightMargin: 12
                             Label { width: 36; height: parent.height; verticalAlignment: Text.AlignVCenter; text: "#"; font.bold: true; color: Theme.textMuted }
                             Label { width: cartList.nameWidth; height: parent.height; verticalAlignment: Text.AlignVCenter; text: qsTr("Producto"); font.bold: true; color: Theme.textMuted }
-                            Label { width: 120; height: parent.height; verticalAlignment: Text.AlignVCenter; horizontalAlignment: Text.AlignRight; text: qsTr("Cantidad"); font.bold: true; color: Theme.textMuted }
+                            Label { width: 120; height: parent.height; verticalAlignment: Text.AlignVCenter; horizontalAlignment: Text.AlignRight; text: qsTr("Cantidad"); font.bold: true; color: Theme.textMuted; HelpTip { text: qsTr("Cantidad y unidad de cada línea. Doble clic en una línea para cambiarla.") } }
                             Label { width: 110; height: parent.height; verticalAlignment: Text.AlignVCenter; horizontalAlignment: Text.AlignRight; text: qsTr("Precio"); font.bold: true; color: Theme.textMuted }
-                            Label { width: 130; height: parent.height; verticalAlignment: Text.AlignVCenter; horizontalAlignment: Text.AlignRight; text: qsTr("Importe"); font.bold: true; color: Theme.textMuted }
+                            Label { width: 130; height: parent.height; verticalAlignment: Text.AlignVCenter; horizontalAlignment: Text.AlignRight; text: qsTr("Importe"); font.bold: true; color: Theme.textMuted; HelpTip { text: qsTr("Cantidad × precio de la línea, antes del descuento general.") } }
                         }
                     }
 
@@ -347,6 +348,7 @@ Item {
                 color: Theme.textMuted
                 font.pixelSize: Theme.fontSmall
                 elide: Text.ElideRight
+                HelpTip { text: qsTr("Atajos de teclado de esta pantalla. La lista completa está en el manual (F1) → Atajos de teclado.") }
             }
         }
 
@@ -363,7 +365,11 @@ Item {
                 anchors.margins: 18
                 spacing: 10
 
-                Label { text: qsTr("Venta"); font.pixelSize: Theme.fontLarge; font.bold: true }
+                RowLayout {
+                    Layout.fillWidth: true
+                    Label { text: qsTr("Venta"); font.pixelSize: Theme.fontLarge; font.bold: true; Layout.fillWidth: true }
+                    HelpButton { topic: "venta" }
+                }
                 Label { text: qsTr("%n línea(s)", "", saleCtrl.itemCount); color: Theme.textMuted }
 
                 Rectangle { Layout.fillWidth: true; height: 1; color: Theme.border }
@@ -378,13 +384,14 @@ Item {
                     Label {
                         text: saleCtrl.discountLabel !== "" ? qsTr("Descuento (%1)").arg(saleCtrl.discountLabel) : qsTr("Descuento")
                         Layout.fillWidth: true
+                        HelpTip { text: qsTr("Descuento aplicado a toda la venta (F7 para cambiarlo).") }
                     }
                     Label { text: saleCtrl.discountText === "0.00" ? "0.00" : "−" + saleCtrl.discountText; color: saleCtrl.discountText === "0.00" ? Theme.textMuted : Theme.success }
                 }
 
                 Rectangle { Layout.fillWidth: true; height: 1; color: Theme.border }
 
-                Label { text: qsTr("TOTAL"); color: Theme.textMuted; font.bold: true }
+                Label { text: qsTr("TOTAL"); color: Theme.textMuted; font.bold: true; HelpTip { text: qsTr("Total a cobrar en la moneda base, después del descuento.") } }
                 Label {
                     Layout.fillWidth: true
                     horizontalAlignment: Text.AlignRight
@@ -410,6 +417,7 @@ Item {
                     enabled: saleCtrl.itemCount > 0 && saleCtrl.hasOpenSession
                     focusPolicy: Qt.NoFocus
                     onClicked: root.pay()
+                    HelpTip { text: qsTr("Abre la ventana de cobro: efectivo en cualquier moneda aceptada, transferencia o mixto. Calcula el vuelto.") }
                 }
                 RowLayout {
                     Layout.fillWidth: true
@@ -419,6 +427,7 @@ Item {
                         enabled: cartList.currentIndex >= 0
                         focusPolicy: Qt.NoFocus
                         onClicked: root.editQty()
+                        HelpTip { text: qsTr("Cambia la cantidad de la línea elegida. Acepta decimales para productos por peso (1.5 lb).") }
                     }
                     Button {
                         Layout.fillWidth: true
@@ -426,6 +435,7 @@ Item {
                         enabled: saleCtrl.itemCount > 0
                         focusPolicy: Qt.NoFocus
                         onClicked: discountDialog.openNew()
+                        HelpTip { text: qsTr("Descuento a toda la venta, como importe fijo o como porcentaje del subtotal.") }
                     }
                 }
                 RowLayout {
@@ -436,6 +446,7 @@ Item {
                         enabled: cartList.currentIndex >= 0
                         focusPolicy: Qt.NoFocus
                         onClicked: root.removeCurrent()
+                        HelpTip { text: qsTr("Quita del carrito la línea elegida (también con Supr si el buscador está vacío).") }
                     }
                     Button {
                         Layout.fillWidth: true
@@ -443,6 +454,7 @@ Item {
                         enabled: saleCtrl.itemCount > 0
                         focusPolicy: Qt.NoFocus
                         onClicked: cancelDialog.open()
+                        HelpTip { text: qsTr("Vacía el carrito sin registrar nada. Pide confirmación.") }
                     }
                 }
             }
@@ -476,6 +488,7 @@ Item {
                 implicitHeight: 48
                 text: qsTr("Abrir caja (F8)")
                 onClicked: openCashDialog.openNew()
+                HelpTip { text: qsTr("Hay que abrir la caja con el efectivo inicial de la gaveta antes de vender.") }
             }
         }
     }
@@ -521,6 +534,8 @@ Item {
 
     Dialog {
         id: cancelDialog
+        onAboutToShow: help.enter("venta")
+        onAboutToHide: help.leave("venta")
         title: qsTr("Cancelar venta")
         modal: true
         parent: Overlay.overlay
