@@ -36,33 +36,30 @@ Item {
                 Layout.fillWidth: true
             }
             HelpButton { topic: "caja" }
+            // Sin hijos que cambien de visible: un RowLayout oculto (otra pantalla) no se reacomoda
+            // al volver si un hijo aparecio o desaparecio mientras tanto (Qt 6.4).
             Button {
-                visible: cashCtrl.isOpen
+                enabled: cashCtrl.isOpen
                 text: qsTr("Ingreso")
                 focusPolicy: Qt.NoFocus
                 onClicked: movementDialog.openFor(false)
                 HelpTip { text: qsTr("Registra dinero que entra a la gaveta sin ser una venta (por ejemplo, cambio adicional).") }
             }
             Button {
-                visible: cashCtrl.isOpen
+                enabled: cashCtrl.isOpen
                 text: qsTr("Retiro")
                 focusPolicy: Qt.NoFocus
                 onClicked: movementDialog.openFor(true)
                 HelpTip { text: qsTr("Registra dinero que sale de la gaveta: pago a un proveedor, depósito, gasto. Pide el motivo.") }
             }
             PrimaryButton {
-                visible: cashCtrl.isOpen
-                text: qsTr("Cerrar caja (F9)")
+                text: cashCtrl.isOpen ? qsTr("Cerrar caja (F9)") : qsTr("Abrir caja (F8)")
                 focusPolicy: Qt.NoFocus
-                onClicked: closeDialog.openNew()
-                HelpTip { text: qsTr("Arqueo: cuentas el efectivo de cada moneda y el programa calcula si sobra o falta. Hace un respaldo automático.") }
-            }
-            PrimaryButton {
-                visible: !cashCtrl.isOpen
-                text: qsTr("Abrir caja (F8)")
-                focusPolicy: Qt.NoFocus
-                onClicked: openCashDialog.openNew()
-                HelpTip { text: qsTr("Empieza el turno con el efectivo inicial de la gaveta. Sin caja abierta no se puede vender.") }
+                onClicked: cashCtrl.isOpen ? closeDialog.openNew() : openCashDialog.openNew()
+                HelpTip {
+                    text: cashCtrl.isOpen ? qsTr("Arqueo: cuentas el efectivo de cada moneda y el programa calcula si sobra o falta. Hace un respaldo automático.")
+                                          : qsTr("Empieza el turno con el efectivo inicial de la gaveta. Sin caja abierta no se puede vender.")
+                }
             }
         }
 
@@ -116,7 +113,10 @@ Item {
                             { "label": qsTr("Ingresos manuales"), "value": root.s.movementsInText || "",
                               "tip": qsTr("Dinero agregado a la gaveta con el botón Ingreso.") },
                             { "label": qsTr("Retiros"), "value": root.s.movementsOutText || "",
-                              "tip": qsTr("Dinero sacado de la gaveta con el botón Retiro.") }
+                              "tip": qsTr("Dinero sacado de la gaveta con el botón Retiro.") },
+                            { "label": qsTr("Devoluciones"),
+                              "value": (root.s.refundsCount || 0) > 0 ? root.s.refundsText + "  (" + root.s.refundsCount + ")" : "0.00",
+                              "tip": qsTr("Dinero devuelto a clientes en esta caja (efectivo y transferencia). Ya está restado del total vendido y del efectivo esperado.") }
                         ]
                         delegate: Rectangle {
                             Layout.fillWidth: true

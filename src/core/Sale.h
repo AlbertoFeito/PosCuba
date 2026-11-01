@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QMap>
 #include <QString>
 #include <QStringList>
 #include <QVector>
@@ -68,7 +69,9 @@ struct CurrencyAmount
 struct CashSummary
 {
     int salesCount = 0;
-    qint64 salesTotal = 0;      // total vendido (moneda base)
+    qint64 salesTotal = 0;      // total vendido (moneda base), ya restadas las devoluciones
+    int refundsCount = 0;
+    qint64 refundsTotal = 0;    // devuelto en esta caja (efectivo + transferencia)
     qint64 cashSales = 0;       // efectivo recibido menos vuelto (moneda base)
     qint64 transferSales = 0;
     qint64 movementsIn = 0;     // ingresos manuales
@@ -106,6 +109,16 @@ struct PaymentDetail
     QString reference;
 };
 
+struct RefundInfo
+{
+    int number = 0;
+    QString createdAt;
+    QString userName;
+    QString method;           // PaymentMethod::cash() / transfer()
+    QString reason;
+    qint64 total = 0;
+};
+
 struct SaleDetail
 {
     int id = 0;
@@ -119,6 +132,15 @@ struct SaleDetail
     qint64 change = 0;
     QVector<SaleItemDetail> items;
     QVector<PaymentDetail> payments;
+    QVector<RefundInfo> refunds;
+
+    qint64 refundedTotal() const
+    {
+        qint64 t = 0;
+        for (const RefundInfo &r : refunds)
+            t += r.total;
+        return t;
+    }
 };
 
 struct SaleRow
@@ -130,4 +152,78 @@ struct SaleRow
     qint64 total = 0;
     int itemCount = 0;
     QString status;
+    qint64 refunded = 0;
+};
+
+// ---- Devoluciones ----
+
+struct RefundableItem
+{
+    int saleItemId = 0;
+    int productId = 0;
+    QString name;
+    QString unit;
+    qint64 soldMilli = 0;
+    qint64 returnedMilli = 0;
+    qint64 priceCents = 0;
+    qint64 lineTotalCents = 0;
+    qint64 costCents = 0;     // costo unitario al vender
+
+    qint64 availableMilli() const { return soldMilli - returnedMilli; }
+};
+
+// Estado de una venta frente a devoluciones.
+struct SaleRefundState
+{
+    int saleId = 0;
+    int number = 0;
+    QString createdAt;
+    QString status;
+    qint64 subtotal = 0;
+    qint64 total = 0;
+    qint64 refunded = 0;      // ya devuelto (moneda base)
+    QVector<RefundableItem> items;
+
+    bool voided() const { return status == QLatin1String("voided"); }
+};
+
+// Calculo de una devolucion (sin escribir nada).
+struct RefundCalc
+{
+    QMap<int, qint64> amountByItem;   // sale_item_id -> importe a devolver
+    QMap<int, qint64> costByItem;     // sale_item_id -> costo de lo devuelto
+    qint64 total = 0;
+    qint64 cost = 0;
+    bool completesSale = false;       // tras esta devolucion no queda nada: la venta se anula
+};
+
+struct RefundRequest
+{
+    int saleId = 0;
+    QMap<int, qint64> qtyByItem;      // sale_item_id -> cantidad (milesimas)
+    bool all = false;                 // devolver todo lo que queda (anular)
+    QString method = PaymentMethod::cash();
+    QString reason;
+    bool restock = true;              // reintegrar al inventario
+    int userId = 0;
+    int authorizedBy = 0;             // administrador que autoriza
+};
+
+struct RefundResult
+{
+    bool ok = false;
+    int refundId = 0;
+    int number = 0;
+    qint64 total = 0;
+    bool voided = false;
+    QString error;
+};
+
+struct RefundTotals
+{
+    int count = 0;
+    qint64 total = 0;
+    qint64 cost = 0;
+    qint64 cash = 0;
+    qint64 transfer = 0;
 };

@@ -258,6 +258,8 @@ QVariantList TicketController::recentSales(int limit)
             {QStringLiteral("userName"), r.userName},
             {QStringLiteral("itemCount"), r.itemCount},
             {QStringLiteral("voided"), r.status == QLatin1String("voided")},
+            {QStringLiteral("refunded"), r.refunded > 0},
+            {QStringLiteral("refundedText"), Money::formatCents(r.refunded)},
         });
     }
     return out;

@@ -8,6 +8,7 @@
 #include "core/Sale.h"
 #include "data/repositories/CashRepository.h"
 #include "data/repositories/CurrencyRepository.h"
+#include "data/repositories/RefundRepository.h"
 
 class CashService
 {
@@ -31,4 +32,5 @@ private:
     QSqlDatabase m_db;
     CashRepository m_cash;
     CurrencyRepository m_currencies;
+    RefundRepository m_refunds;
 };

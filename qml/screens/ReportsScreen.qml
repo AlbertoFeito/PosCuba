@@ -96,8 +96,9 @@ Item {
                 model: [
                     { "label": qsTr("Ventas"), "value": String(root.s.salesCount || 0), "hint": "",
                       "tip": qsTr("Cantidad de ventas del período.") },
-                    { "label": qsTr("Total vendido"), "value": root.s.totalText || "", "hint": root.s.discountText !== "0.00" ? qsTr("descuentos %1").arg(root.s.discountText) : "",
-                      "tip": qsTr("Suma de los totales cobrados, ya restados los descuentos.") },
+                    { "label": qsTr("Total vendido"), "value": root.s.totalText || "", "hint": [ root.s.discountText && root.s.discountText !== "0.00" ? qsTr("descuentos %1").arg(root.s.discountText) : "",
+                                                                                        (root.s.refundsCount || 0) > 0 ? qsTr("devoluciones %1").arg(root.s.refundsText) : "" ].filter(function(t) { return t !== "" }).join(" · "),
+                      "tip": qsTr("Suma de los totales cobrados, ya restados los descuentos y lo devuelto a clientes en el período.") },
                     { "label": qsTr("Ganancia"), "value": root.s.profitText || "", "hint": qsTr("margen %1 %").arg(root.s.marginPercent || 0),
                       "tip": qsTr("Total vendido menos el costo de lo vendido (costo al momento de cada venta). El margen es la ganancia sobre el total.") },
                     { "label": qsTr("Ticket promedio"), "value": root.s.averageText || "", "hint": "",

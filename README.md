@@ -24,7 +24,8 @@ Opciones: `-Config Release`, `-Clean`, `-Test` (ejecuta los tests), `-Run`, `-So
 ```powershell
 .\scripts\deploy.ps1 -QtDir C:\Qt\6.8.3\mingw_64 -MingwBin C:\Qt\Tools\mingw1310_64\bin
 ```
-Genera `dist\PosCuba\` (Release, sin consola, con `windeployqt`) y un `.zip`. Se copia la carpeta a la otra PC y se abre `PosCuba.exe`. No requiere instalar nada.
+Genera `dist\PosCuba\` (Release, sin consola, con `windeployqt`), un `.zip` y, si está instalado [Inno Setup 6.3+](https://jrsoftware.org/isdl.php), el instalador `dist\PosCuba-<versión>-Setup.exe` (`installer\PosCuba.iss`; `-NoInstaller` lo omite). El instalador no pide permisos de administrador, crea los accesos directos (también el modo compatible) y al actualizar o desinstalar conserva los datos. La carpeta también funciona sin instalar: se copia a la otra PC y se abre `PosCuba.exe`.
+El CI de GitHub publica los dos: `PosCuba-windows-mingw` (carpeta) y `PosCuba-instalador` (Setup.exe).
 Si en una PC vieja la ventana sale en negro, usar `PosCuba (modo compatible).bat`.
 
 ## Ayuda para el usuario
@@ -43,12 +44,17 @@ Si en una PC vieja la ventana sale en negro, usar `PosCuba (modo compatible).bat
 | Pantalla | Teclas |
 |---|---|
 | General | F1 manual · Ctrl+1…9 pantallas · Ctrl+L cerrar sesión · Ctrl+Q salir |
-| Venta | F2 buscar · `3*código` cantidad · F3 cantidad · `+`/`−` ajustar · Supr quitar línea · F7 descuento · F4 cobrar · F10 reimprimir · F8 abrir caja · Esc cancelar |
+| Venta | F2 buscar · `3*código` cantidad · F3 cantidad · `+`/`−` ajustar · Supr quitar línea · F7 descuento · F4 cobrar · F10 ventas recientes (reimprimir, devolver, anular) · F8 abrir caja · Esc cancelar |
 | Cobro | Enter confirmar · F6 cambiar moneda del efectivo · Tab siguiente campo · Esc volver |
-| Productos | Ctrl+N nuevo · F2 buscar · Enter/F3 editar · Supr desactivar · Ctrl+S guardar |
+| Productos | Ctrl+N nuevo · Ctrl+P cambiar precios · Ctrl+I importar/exportar · F2 buscar · Enter/F3 editar · Supr desactivar · Ctrl+S guardar |
 | Inventario | F5 entrada · F6 ajuste |
 | Caja | F8 abrir · F9 cerrar (arqueo) |
 | Respaldos | Ctrl+B respaldar ahora |
+
+## Funciones de catálogo y devoluciones
+- **Devoluciones y anulaciones** (F10 → *Devolver / anular…*): parciales o de toda la venta, en efectivo o por transferencia, con o sin reintegro al inventario. El importe incluye la parte del descuento de la venta; al completar la venta se devuelve exactamente lo que falta. Un cajero necesita el PIN de un administrador. Caja, inventario, reportes y ticket se ajustan solos.
+- **Cambiar precios en lote** (Productos → *Cambiar precios…*): % sobre el precio o costo + % de ganancia, por categoría, con redondeo a 1/5/10/50/100 hacia arriba o al más cercano y vista previa.
+- **Importar / exportar productos** (Productos → *Importar / exportar…*): CSV de Excel (`;` o `,`, UTF-8 o Windows-1252), columnas reconocidas por nombre, revisión fila por fila antes de guardar, todo en una transacción; plantilla incluida.
 
 ## Roles
 - **Administrador**: todo.
@@ -80,9 +86,9 @@ Respaldo automático una vez al día y al cerrar caja; se conservan los últimos
 src/core        dominio y servicios (sin QML)   src/data        SQLite: conexión, migraciones, repositorios
 src/models      modelos de lista para QML        src/controllers objetos expuestos a QML
 src/printing    impresión de tickets             qml/            pantallas, diálogos, tema
-tests/          QtTest (12 suites)               scripts/        build.ps1, deploy.ps1
-docs/manual/    manual de usuario (Markdown)
+tests/          QtTest (14 suites)               scripts/        build.ps1, deploy.ps1
+docs/manual/    manual de usuario (Markdown)     installer/      script de Inno Setup
 ```
 
 ## Tests
-`.\scripts\build.ps1 ... -Test` o `ctest` en la carpeta de compilación. Cubren dinero, productos, inventario, cálculo de venta y vuelto, venta completa y cierre de caja, ticket, impresión a PDF, reportes, usuarios, respaldos, monedas y el manual (secciones, enlaces, búsqueda y que cada tema de ayuda que pide la interfaz exista).
+`.\scripts\build.ps1 ... -Test` o `ctest` en la carpeta de compilación. Cubren dinero, productos, inventario, cálculo de venta y vuelto, venta completa y cierre de caja, ticket, impresión a PDF, reportes, usuarios, respaldos, monedas, devoluciones, cambio de precios, importación de productos y el manual (secciones, enlaces, búsqueda y que cada tema de ayuda que pide la interfaz exista).

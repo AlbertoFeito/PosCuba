@@ -17,6 +17,7 @@ struct PeriodRow
     qint64 cost = 0;
     qint64 profit = 0;
     qint64 discount = 0;
+    qint64 refunds = 0;   // devuelto en el periodo (ya restado de total)
 };
 
 struct ProductRow
@@ -39,6 +40,8 @@ struct ReportSummary
     qint64 discount = 0;
     qint64 cash = 0;        // efectivo neto (recibido menos vuelto), moneda base
     qint64 transfer = 0;
+    qint64 refunds = 0;     // devuelto en el periodo (ya restado de total, efectivo y transferencia)
+    int refundsCount = 0;
     qint64 averageTicket = 0;
     int marginPercent = 0;  // ganancia / total
 };
@@ -54,4 +57,6 @@ struct SaleReportRow
     qint64 cost = 0;
     qint64 cash = 0;
     qint64 transfer = 0;
+    qint64 refunded = 0;  // devuelto de esta venta (en cualquier fecha)
+    bool voided = false;
 };

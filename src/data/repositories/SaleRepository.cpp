@@ -129,6 +129,22 @@ bool SaleRepository::load(int saleId, SaleDetail *out)
             d.payments.append(p);
         }
     }
+
+    q.prepare(QStringLiteral("SELECT r.number, r.created_at, u.name, r.method, r.reason, r.total_cents "
+                             "FROM refunds r LEFT JOIN users u ON u.id = r.user_id WHERE r.sale_id = :id ORDER BY r.id"));
+    q.bindValue(QStringLiteral(":id"), saleId);
+    if (q.exec()) {
+        while (q.next()) {
+            RefundInfo r;
+            r.number = q.value(0).toInt();
+            r.createdAt = q.value(1).toString();
+            r.userName = q.value(2).toString();
+            r.method = q.value(3).toString();
+            r.reason = q.value(4).toString();
+            r.total = q.value(5).toLongLong();
+            d.refunds.append(r);
+        }
+    }
     if (out)
         *out = d;
     return true;
@@ -140,7 +156,8 @@ QVector<SaleRow> SaleRepository::recent(int limit)
     QSqlQuery q(m_db);
     q.prepare(QStringLiteral(
         "SELECT s.id, s.number, s.created_at, u.name, s.total_cents, "
-        "(SELECT COUNT(*) FROM sale_items i WHERE i.sale_id = s.id), s.status "
+        "(SELECT COUNT(*) FROM sale_items i WHERE i.sale_id = s.id), s.status, "
+        "(SELECT COALESCE(SUM(total_cents), 0) FROM refunds r WHERE r.sale_id = s.id) "
         "FROM sales s LEFT JOIN users u ON u.id = s.user_id ORDER BY s.id DESC LIMIT :l"));
     q.bindValue(QStringLiteral(":l"), limit);
     if (!q.exec()) {
@@ -156,6 +173,7 @@ QVector<SaleRow> SaleRepository::recent(int limit)
         r.total = q.value(4).toLongLong();
         r.itemCount = q.value(5).toInt();
         r.status = q.value(6).toString();
+        r.refunded = q.value(7).toLongLong();
         out.append(r);
     }
     return out;

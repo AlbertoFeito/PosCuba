@@ -7,11 +7,14 @@
 # Resultado:
 #   dist\PosCuba\                       carpeta lista para copiar a otra PC (USB)
 #   dist\PosCuba-<version>-Qt<x.y.z>.zip
+#   dist\PosCuba-<version>-Setup.exe        instalador (si Inno Setup 6.3+ esta instalado; -NoInstaller lo omite)
 param(
     [Parameter(Mandatory = $true)][string]$QtDir,
     [string]$MingwBin = "",
     [string]$Generator = "MinGW Makefiles",
-    [switch]$KeepTranslations
+    [switch]$KeepTranslations,
+    [switch]$NoInstaller,
+    [string]$Iscc = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -73,8 +76,31 @@ $zip = Join-Path $root "dist\PosCuba-$version-Qt$qtName.zip"
 if (Test-Path $zip) { Remove-Item -Force $zip }
 Compress-Archive -Path $distDir -DestinationPath $zip
 
+# 7) Instalador (Inno Setup)
+$setup = ""
+if (-not $NoInstaller) {
+    if (-not $Iscc) {
+        $candidates = @($env:ISCC,
+                        "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe",
+                        "$env:ProgramFiles\Inno Setup 6\ISCC.exe",
+                        "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe")
+        $cmd = Get-Command iscc.exe -ErrorAction SilentlyContinue
+        if ($cmd) { $candidates += $cmd.Source }
+        $Iscc = $candidates | Where-Object { $_ -and (Test-Path $_) } | Select-Object -First 1
+    }
+    if ($Iscc) {
+        & $Iscc /Q "/DAppVersion=$version" "/DSourceDir=$distDir" "/DOutputDir=$(Join-Path $root 'dist')" `
+            (Join-Path $root "installer\PosCuba.iss")
+        if ($LASTEXITCODE -ne 0) { throw "Falló Inno Setup" }
+        $setup = Join-Path $root "dist\PosCuba-$version-Setup.exe"
+    } else {
+        Write-Host "Inno Setup no está instalado: no se generó el instalador (https://jrsoftware.org/isdl.php)." -ForegroundColor Yellow
+    }
+}
+
 $size = "{0:N1} MB" -f ((Get-ChildItem $distDir -Recurse | Measure-Object Length -Sum).Sum / 1MB)
 Write-Host ""
 Write-Host "Listo: $distDir ($size)" -ForegroundColor Green
 Write-Host "Zip:   $zip" -ForegroundColor Green
+if ($setup) { Write-Host "Setup: $setup" -ForegroundColor Green }
 Write-Host "Prueba la carpeta en una PC sin Qt instalado antes de entregarla." -ForegroundColor Yellow

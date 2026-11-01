@@ -101,6 +101,32 @@ bool ProductRepository::get(int id, Product *out)
     return true;
 }
 
+bool ProductRepository::getByCode(const QString &code, Product *out)
+{
+    QSqlQuery q(m_db);
+    q.prepare(QString::fromLatin1(kSelect) + QStringLiteral("WHERE p.code = :c"));
+    q.bindValue(QStringLiteral(":c"), code);
+    if (!q.exec() || !q.next())
+        return false;
+    if (out)
+        *out = readRow(q);
+    return true;
+}
+
+bool ProductRepository::getByBarcode(const QString &barcode, Product *out)
+{
+    if (barcode.isEmpty())
+        return false;
+    QSqlQuery q(m_db);
+    q.prepare(QString::fromLatin1(kSelect) + QStringLiteral("WHERE p.barcode = :b"));
+    q.bindValue(QStringLiteral(":b"), barcode);
+    if (!q.exec() || !q.next())
+        return false;
+    if (out)
+        *out = readRow(q);
+    return true;
+}
+
 bool ProductRepository::codeExists(const QString &code, int excludeId)
 {
     QSqlQuery q(m_db);
@@ -227,6 +253,20 @@ bool ProductRepository::setCost(int id, qint64 costCents)
     q.prepare(QStringLiteral("UPDATE products SET cost_cents = :c, updated_at = datetime('now','localtime') "
                              "WHERE id = :id"));
     q.bindValue(QStringLiteral(":c"), costCents);
+    q.bindValue(QStringLiteral(":id"), id);
+    if (!q.exec()) {
+        m_lastError = q.lastError().text();
+        return false;
+    }
+    return q.numRowsAffected() == 1;
+}
+
+bool ProductRepository::setPrice(int id, qint64 priceCents)
+{
+    QSqlQuery q(m_db);
+    q.prepare(QStringLiteral("UPDATE products SET price_cents = :p, updated_at = datetime('now','localtime') "
+                             "WHERE id = :id"));
+    q.bindValue(QStringLiteral(":p"), priceCents);
     q.bindValue(QStringLiteral(":id"), id);
     if (!q.exec()) {
         m_lastError = q.lastError().text();

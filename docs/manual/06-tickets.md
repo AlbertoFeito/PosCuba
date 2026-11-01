@@ -37,7 +37,10 @@ En **Venta**, pulsa **F10** para ver las últimas 50 ventas:
 - A la derecha, la vista previa del ticket exactamente como sale.
 - **Imprimir (Enter)** o doble clic: lo envía a la impresora configurada.
 - **PDF del día**: vuelve a generar el PDF del día de esa venta, con todas las ventas de ese día.
+- **Devolver / anular…** (o **Supr**): devolución de productos o anulación de la venta elegida. Ver [Devoluciones y anulaciones](ayuda:devoluciones).
 - **Abrir carpeta**: abre la carpeta de los PDF.
+
+Las ventas con devoluciones se marcan *devuelto …* en amarillo y las anuladas *ANULADA* en rojo. Su ticket muestra cada devolución y el importe **NETO**.
 
 ## Ticket de prueba
 

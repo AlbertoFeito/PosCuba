@@ -50,6 +50,11 @@ El **stock no se cambia aquí**: se hace con entradas y ajustes en [Inventario](
 
 Los productos no se borran, porque ya pueden tener ventas. **Supr** o *Desactivar* lo esconde de la venta y de las búsquedas. Para recuperarlo, marca *Mostrar inactivos*, elígelo y pulsa *Reactivar*.
 
+## Muchos productos a la vez
+
+- **Cambiar precios…**: sube o baja precios en lote, por porcentaje y con redondeo. Ver [Cambiar precios en lote](ayuda:precios).
+- **Importar / exportar…**: carga productos desde Excel (CSV) o guarda el catálogo en un archivo. Ver [Importar y exportar productos](ayuda:importar).
+
 ## Categorías
 
 Sirven para ordenar y filtrar. Se crean desde la ventana del producto con el botón **+** (hasta 60 caracteres).

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(PosCuba VERSION 1.1.0 LANGUAGES CXX)
+project(PosCuba VERSION 1.2.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -34,6 +34,8 @@ add_library(poscore OBJECT
     src/core/Currency.h
     src/core/CsvWriter.cpp
     src/core/CsvWriter.h
+    src/core/CsvReader.cpp
+    src/core/CsvReader.h
     src/core/HelpCatalog.cpp
     src/core/HelpCatalog.h
     src/core/Report.h
@@ -53,8 +55,14 @@ add_library(poscore OBJECT
     src/core/services/CurrencyService.h
     src/core/services/InventoryService.cpp
     src/core/services/InventoryService.h
+    src/core/services/PricingService.cpp
+    src/core/services/PricingService.h
+    src/core/services/ProductImportService.cpp
+    src/core/services/ProductImportService.h
     src/core/services/ProductService.cpp
     src/core/services/ProductService.h
+    src/core/services/RefundService.cpp
+    src/core/services/RefundService.h
     src/core/services/ReportService.cpp
     src/core/services/ReportService.h
     src/core/services/SaleService.cpp
@@ -76,6 +84,8 @@ add_library(poscore OBJECT
     src/data/Transaction.h
     src/data/repositories/StockMovementRepository.cpp
     src/data/repositories/StockMovementRepository.h
+    src/data/repositories/RefundRepository.cpp
+    src/data/repositories/RefundRepository.h
     src/data/repositories/SaleRepository.cpp
     src/data/repositories/SaleRepository.h
     src/data/repositories/SettingsRepository.cpp
@@ -110,6 +120,8 @@ add_executable(pos
     src/controllers/BackupController.h
     src/controllers/CashController.cpp
     src/controllers/CashController.h
+    src/controllers/CatalogController.cpp
+    src/controllers/CatalogController.h
     src/controllers/CurrencyController.cpp
     src/controllers/CurrencyController.h
     src/controllers/HelpController.cpp
@@ -118,6 +130,8 @@ add_executable(pos
     src/controllers/InventoryController.h
     src/controllers/ProductController.cpp
     src/controllers/ProductController.h
+    src/controllers/RefundController.cpp
+    src/controllers/RefundController.h
     src/controllers/ReportController.cpp
     src/controllers/ReportController.h
     src/controllers/SaleController.cpp
@@ -162,7 +176,7 @@ endforeach()
 # ---- Tests ----
 if(POS_BUILD_TESTS)
     enable_testing()
-    foreach(name tst_money tst_productservice tst_inventory tst_salecalculator tst_sale tst_ticket tst_reports tst_users tst_backup tst_currency tst_help)
+    foreach(name tst_money tst_productservice tst_inventory tst_salecalculator tst_sale tst_ticket tst_reports tst_users tst_backup tst_currency tst_help tst_refund tst_catalog)
         add_executable(${name} tests/${name}.cpp)
         target_link_libraries(${name} PRIVATE poscore Qt${QT_VERSION_MAJOR}::Test)
         if(MSVC)

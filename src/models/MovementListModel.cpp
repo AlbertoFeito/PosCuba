@@ -23,7 +23,7 @@ QString MovementListModel::typeText(const QString &type)
     if (type == MovementType::adjust())
         return tr("Ajuste");
     if (type == MovementType::voidSale())
-        return tr("Anulación");
+        return tr("Devolución");
     return type;
 }
 

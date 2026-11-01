@@ -78,6 +78,23 @@ private slots:
         QVERIFY(svc.authenticate(ana, QStringLiteral("5555"), &s, &error));
     }
 
+    void verifyAdminForRefunds()
+    {
+        UserService svc(Database::connection());
+        QString error;
+        Session admin;
+        QVERIFY(svc.setupAdmin(QStringLiteral("2468"), QStringLiteral("2468"), &admin, &error));
+        const int cashier = svc.create(QStringLiteral("Ana"), Role::cashier(), QStringLiteral("1111"), &error);
+        QVERIFY(svc.verifyAdmin(admin.userId, QStringLiteral("2468"), &error));
+        QVERIFY(!svc.verifyAdmin(cashier, QStringLiteral("1111"), &error));        // un cajero no autoriza
+        QVERIFY(error.contains(QStringLiteral("administrador")));
+        QVERIFY(!svc.verifyAdmin(admin.userId, QStringLiteral("0000"), &error));
+        QVERIFY(error.contains(QStringLiteral("intento")));
+        for (int i = 1; i < UserService::MaxAttempts; ++i)
+            svc.verifyAdmin(admin.userId, QStringLiteral("0000"), &error);
+        QVERIFY(svc.secondsLocked(admin.userId) > 0);                               // cuenta para el bloqueo
+    }
+
     void lockoutAfterFailures()
     {
         UserService svc(Database::connection());

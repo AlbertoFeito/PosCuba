@@ -12,10 +12,12 @@
 #include "app/Formatter.h"
 #include "controllers/BackupController.h"
 #include "controllers/CashController.h"
+#include "controllers/CatalogController.h"
 #include "controllers/CurrencyController.h"
 #include "controllers/HelpController.h"
 #include "controllers/InventoryController.h"
 #include "controllers/ProductController.h"
+#include "controllers/RefundController.h"
 #include "controllers/ReportController.h"
 #include "controllers/SaleController.h"
 #include "controllers/TicketController.h"
@@ -60,6 +62,19 @@ int main(int argc, char *argv[])
     BackupController backupController(Database::connection(), controller.session());
     CurrencyController currencyController(Database::connection(), controller.session());
     HelpController helpController(Database::connection());
+    CatalogController catalogController(Database::connection(), controller.session());
+    QObject::connect(&catalogController, &CatalogController::catalogChanged, &app, [&]() {
+        productController.reloadCategories();
+        productController.reload();
+        inventoryController.reload();
+    });
+    RefundController refundController(Database::connection(), controller.session(), controller.userService());
+    QObject::connect(&refundController, &RefundController::refunded, &app, [&]() {
+        cashController.refresh();
+        inventoryController.reload();
+        productController.reload();
+        reportController.refresh();
+    });
     QObject::connect(&currencyController, &CurrencyController::currenciesEdited, &app, [&]() {
         saleController.refreshCurrencies();
         ticketController.reloadSettings();
@@ -119,6 +134,8 @@ int main(int argc, char *argv[])
     ctx->setContextProperty(QStringLiteral("backupCtrl"), &backupController);
     ctx->setContextProperty(QStringLiteral("currencyCtrl"), &currencyController);
     ctx->setContextProperty(QStringLiteral("help"), &helpController);
+    ctx->setContextProperty(QStringLiteral("refundCtrl"), &refundController);
+    ctx->setContextProperty(QStringLiteral("catalogCtrl"), &catalogController);
     engine.load(QUrl(QStringLiteral("qrc:/qml/main.qml")));
     if (engine.rootObjects().isEmpty())
         return -1;

@@ -8,6 +8,7 @@ Item {
     id: root
 
     readonly property bool interactive: visible && !productDialog.visible && !confirmDialog.visible
+                                       && !priceDialog.visible && !importDialog.visible
     readonly property int colCode: 120
     readonly property int colCategory: 170
     readonly property int colMoney: 110
@@ -63,6 +64,8 @@ Item {
         enabled: root.interactive
         onActivated: productDialog.openNew()
     }
+    Shortcut { sequence: "Ctrl+P"; enabled: root.interactive; onActivated: priceDialog.openNew() }
+    Shortcut { sequence: "Ctrl+I"; enabled: root.interactive; onActivated: importDialog.openNew() }
     Shortcut {
         sequence: "F2"
         enabled: root.interactive
@@ -94,6 +97,18 @@ Item {
                 Layout.fillWidth: true
             }
             HelpButton { topic: "productos" }
+            Button {
+                text: qsTr("Cambiar precios…")
+                focusPolicy: Qt.NoFocus
+                onClicked: priceDialog.openNew()
+                HelpTip { text: qsTr("Sube o baja precios en lote (todos o una categoría) con un porcentaje y redondeo. Muestra la lista antes de aplicar. Atajo: Ctrl+P.") }
+            }
+            Button {
+                text: qsTr("Importar / exportar…")
+                focusPolicy: Qt.NoFocus
+                onClicked: importDialog.openNew()
+                HelpTip { text: qsTr("Carga productos desde un archivo de Excel (CSV) o guarda el catálogo completo en uno. Atajo: Ctrl+I.") }
+            }
             PrimaryButton {
                 text: qsTr("Nuevo producto (Ctrl+N)")
                 focusPolicy: Qt.NoFocus
@@ -292,6 +307,18 @@ Item {
                 HelpTip { text: qsTr("Desactivar lo quita de la venta y de las búsquedas sin borrar su historial. Reactivar lo devuelve.") }
             }
         }
+    }
+
+    PriceDialog {
+        id: priceDialog
+        onApplied: root.notify(qsTr("Precios cambiados: %n producto(s).", "", priceDialog.appliedCount), false)
+        onClosed: list.forceActiveFocus()
+    }
+
+    ImportDialog {
+        id: importDialog
+        onImported: root.notify(importDialog.resultText, false)
+        onClosed: list.forceActiveFocus()
     }
 
     ProductDialog {

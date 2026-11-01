@@ -10,9 +10,20 @@ PosCuba es un punto de venta para negocios pequeños: bodegas, cafeterías, punt
 
 ## Instalar
 
-1. Copia la carpeta **PosCuba** a la PC (por ejemplo a `C:\PosCuba`). No hace falta instalar nada más.
+**Con el instalador** (`PosCuba-<versión>-Setup.exe`):
+
+1. Ábrelo y sigue los pasos. No pide permisos de administrador: instala para tu usuario (puedes elegir «para todos los usuarios»).
+2. Marca *Crear un acceso directo en el escritorio* si lo quieres.
+3. En el menú Inicio quedan **PosCuba**, **PosCuba (modo compatible)** y **Desinstalar PosCuba**.
+
+Para **actualizar** a una versión nueva, ejecuta el instalador nuevo encima: los datos se conservan. Desinstalar tampoco borra los datos ni los respaldos.
+
+**Sin instalador** (carpeta o .zip):
+
+1. Copia la carpeta **PosCuba** a la PC (por ejemplo a `C:\PosCuba`).
 2. Abre **PosCuba.exe**. Si quieres, crea un acceso directo en el escritorio (clic derecho → Enviar a → Escritorio).
-3. Si la ventana sale en negro o parpadea (pasa en PCs viejas), usa **PosCuba (modo compatible).bat**. Ver [Solución de problemas](ayuda:problemas).
+
+Si la ventana sale en negro o parpadea (pasa en PCs viejas), usa **PosCuba (modo compatible)**. Ver [Solución de problemas](ayuda:problemas).
 
 ## La primera vez
 
@@ -23,7 +34,7 @@ Después, en este orden:
 1. **Configuración** (Ctrl+6): nombre, dirección y teléfono del negocio, y cómo sale el ticket. Ver [Configuración](ayuda:configuracion).
 2. **Monedas** (pestaña *Monedas y tasas* de Configuración): si aceptas USD, MLC u otra moneda en efectivo, agrégala con su tasa. Ver [Monedas y tasas](ayuda:monedas).
 3. **Usuarios** (Ctrl+7): crea un usuario para cada cajero, con su PIN. Ver [Usuarios](ayuda:usuarios).
-4. **Productos** (Ctrl+2): crea el catálogo con precios y costos. Ver [Productos](ayuda:productos).
+4. **Productos** (Ctrl+2): crea el catálogo con precios y costos, a mano o desde un Excel. Ver [Productos](ayuda:productos) e [Importar productos](ayuda:importar).
 5. **Inventario** (Ctrl+3): registra la mercancía que tienes con una **entrada** por producto. Ver [Inventario](ayuda:inventario).
 6. **Respaldos** (Ctrl+8): haz un primer respaldo en una memoria USB. Ver [Respaldos](ayuda:respaldos).
 

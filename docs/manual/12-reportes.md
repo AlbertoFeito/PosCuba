@@ -12,11 +12,13 @@ La pantalla **Reportes** (Ctrl+5, solo administrador) resume las ventas de un pe
 | Recuadro | Qué es |
 |---|---|
 | Ventas | Cantidad de ventas |
-| Total vendido | Suma de los totales (debajo, los descuentos dados) |
+| Total vendido | Suma de los totales, menos lo devuelto a clientes en el período (debajo, los descuentos y las devoluciones) |
 | Ganancia | Total vendido menos el costo de lo vendido; debajo, el margen en % |
 | Ticket promedio | Total vendido ÷ cantidad de ventas |
 | Efectivo | Cobrado en efectivo, convertido a la moneda base y sin el vuelto |
 | Transferencias | Cobrado por transferencia |
+
+Las **devoluciones** se restan en la fecha en que se hicieron, no en la de la venta. Una venta anulada no cuenta en *Ventas*. Ver [Devoluciones y anulaciones](ayuda:devoluciones).
 
 La **ganancia** usa el costo que tenía cada producto **en el momento de la venta**. Si un producto no tiene costo, toda su venta cuenta como ganancia: carga los costos para que este número sea real.
 
@@ -40,7 +42,7 @@ Abajo, **Exportar CSV**:
 
 - **Ventas por período**: la tabla del gráfico.
 - **Productos**: los más vendidos.
-- **Detalle de ventas**: una fila por venta, con cajero, subtotal, descuento, total, costo, ganancia, efectivo y transferencia.
+- **Detalle de ventas**: una fila por venta, con cajero, subtotal, descuento, total, costo, ganancia, efectivo, transferencia, lo devuelto y el estado (completada, con devolución o anulada).
 
 Los archivos se guardan en `Documentos\PosCuba\Reportes`; **Abrir carpeta** la muestra.
 

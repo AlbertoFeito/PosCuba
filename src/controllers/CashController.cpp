@@ -62,6 +62,8 @@ void CashController::refresh()
             {QStringLiteral("movementsInText"), Money::formatCents(sum.movementsIn)},
             {QStringLiteral("movementsOutText"), Money::formatCents(sum.movementsOut)},
             {QStringLiteral("profitText"), Money::formatCents(sum.profit)},
+            {QStringLiteral("refundsCount"), sum.refundsCount},
+            {QStringLiteral("refundsText"), Money::formatCents(sum.refundsTotal)},
             {QStringLiteral("expected"), expected},
         };
     }

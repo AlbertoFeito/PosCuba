@@ -33,7 +33,7 @@ El programa está pensado para usarse con el teclado y el lector de barras. Los 
 | Supr | Quitar la línea elegida (buscador vacío) |
 | F7 | Descuento (Tab cambia importe / %) |
 | F4 | Cobrar |
-| F10 | Ventas recientes y reimprimir |
+| F10 | Ventas recientes: reimprimir, devolver o anular |
 | F8 | Abrir caja |
 | Esc | Limpiar el buscador; con el buscador vacío, cancelar la venta |
 
@@ -46,11 +46,22 @@ El programa está pensado para usarse con el teclado y el lector de barras. Los 
 | Tab | Siguiente campo |
 | Esc | Volver al carrito |
 
+## Ventas recientes (F10)
+
+| Tecla | Acción |
+|---|---|
+| ↑ / ↓ | Elegir venta |
+| Enter | Imprimir el ticket |
+| Supr | Devolver o anular la venta elegida |
+| Ctrl+S | Confirmar la devolución (en su ventana) |
+
 ## Productos
 
 | Tecla | Acción |
 |---|---|
 | Ctrl+N | Nuevo producto |
+| Ctrl+P | Cambiar precios en lote |
+| Ctrl+I | Importar o exportar productos |
 | F2 | Buscar |
 | Enter o F3 | Editar el elegido |
 | Supr | Desactivar o reactivar |

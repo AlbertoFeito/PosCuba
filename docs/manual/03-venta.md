@@ -48,7 +48,7 @@ Al terminar, el carrito queda vacío y en el centro se muestra el número de la 
 
 ## Ventas recientes y reimprimir (F10)
 
-**F10** muestra las últimas 50 ventas con la vista previa de su ticket. Desde ahí se puede reimprimir o volver a generar el PDF del día. Ver [Tickets](ayuda:tickets).
+**F10** muestra las últimas 50 ventas con la vista previa de su ticket. Desde ahí se puede reimprimir, volver a generar el PDF del día, o **devolver productos y anular la venta**. Ver [Tickets](ayuda:tickets) y [Devoluciones y anulaciones](ayuda:devoluciones).
 
 ## Atajos de esta pantalla
 
@@ -61,6 +61,6 @@ Al terminar, el carrito queda vacío y en el centro se muestra el número de la 
 | Supr | Quitar la línea elegida |
 | F7 | Descuento |
 | F4 | Cobrar |
-| F10 | Ventas recientes y reimprimir |
+| F10 | Ventas recientes: reimprimir, devolver o anular |
 | F8 | Abrir caja (si está cerrada) |
 | Esc | Limpiar el buscador o cancelar la venta |

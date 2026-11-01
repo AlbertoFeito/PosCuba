@@ -23,10 +23,11 @@ La pantalla muestra quién la abrió, cuándo y con qué fondo, y estos totales:
 | Efectivo por ventas | Lo cobrado en efectivo (todas las monedas convertidas a la base), ya descontado el vuelto |
 | Ingresos manuales | Dinero que se agregó a la gaveta sin ser venta |
 | Retiros | Dinero que se sacó de la gaveta |
+| Devoluciones | Dinero devuelto a clientes en esta caja (ver [Devoluciones](ayuda:devoluciones)). Ya está restado del total vendido, de la ganancia y del efectivo esperado |
 
 Debajo, **Efectivo esperado en la gaveta**, uno por moneda:
 
-- Moneda base: fondo inicial + efectivo de ventas − vuelto + ingresos − retiros.
+- Moneda base: fondo inicial + efectivo de ventas − vuelto + ingresos − retiros − devoluciones en efectivo.
 - Otras monedas (USD, MLC…): lo recibido en esa moneda.
 
 ## Ingresos y retiros

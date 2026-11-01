@@ -156,8 +156,11 @@ SalesStats CashRepository::salesStats(int sessionId)
 {
     SalesStats st;
     QSqlQuery q(m_db);
-    q.prepare(QStringLiteral("SELECT COUNT(*), COALESCE(SUM(total_cents), 0), COALESCE(SUM(change_cents), 0) "
-                             "FROM sales WHERE session_id = :s AND status = 'completed'"));
+    // Los importes cuentan todas las ventas de la caja (tambien las anuladas despues): lo devuelto
+    // se resta aparte, en la caja donde se devolvio. Solo la cantidad excluye las anuladas.
+    q.prepare(QStringLiteral("SELECT COALESCE(SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END), 0), "
+                             "COALESCE(SUM(total_cents), 0), COALESCE(SUM(change_cents), 0) "
+                             "FROM sales WHERE session_id = :s"));
     q.bindValue(QStringLiteral(":s"), sessionId);
     if (q.exec() && q.next()) {
         st.count = q.value(0).toInt();
@@ -166,7 +169,7 @@ SalesStats CashRepository::salesStats(int sessionId)
     }
     q.prepare(QStringLiteral("SELECT COALESCE(SUM((i.qty_milli * i.cost_cents + 500) / 1000), 0) "
                              "FROM sale_items i JOIN sales s ON s.id = i.sale_id "
-                             "WHERE s.session_id = :s AND s.status = 'completed'"));
+                             "WHERE s.session_id = :s"));
     q.bindValue(QStringLiteral(":s"), sessionId);
     if (q.exec() && q.next())
         st.cost = q.value(0).toLongLong();
@@ -180,7 +183,7 @@ QVector<PaymentTotal> CashRepository::paymentTotals(int sessionId)
     q.prepare(QStringLiteral(
         "SELECT p.method, p.currency_code, SUM(p.amount_cents), SUM(p.base_cents) "
         "FROM payments p JOIN sales s ON s.id = p.sale_id "
-        "WHERE s.session_id = :s AND s.status = 'completed' GROUP BY p.method, p.currency_code"));
+        "WHERE s.session_id = :s GROUP BY p.method, p.currency_code"));
     q.bindValue(QStringLiteral(":s"), sessionId);
     if (q.exec()) {
         while (q.next()) {

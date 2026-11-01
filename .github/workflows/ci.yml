@@ -66,7 +66,11 @@ jobs:
         env:
           QT_QPA_PLATFORM: offscreen
 
-      - name: Generar carpeta distribuible
+      - name: Instalar Inno Setup
+        shell: pwsh
+        run: choco install innosetup -y --no-progress
+
+      - name: Generar carpeta distribuible e instalador
         shell: pwsh
         run: |
           $mingw = Join-Path $env:IQTA_TOOLS "mingw1310_64\bin"
@@ -77,4 +81,12 @@ jobs:
         with:
           name: PosCuba-windows-mingw
           path: dist/PosCuba
+          retention-days: 30
+
+      - name: Publicar instalador
+        uses: actions/upload-artifact@v4
+        with:
+          name: PosCuba-instalador
+          path: dist/*-Setup.exe
+          if-no-files-found: error
           retention-days: 30

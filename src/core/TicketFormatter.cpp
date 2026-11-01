@@ -123,6 +123,22 @@ QStringList TicketFormatter::format(const SaleDetail &sale, const TicketInfo &in
         out << justify(tr("Vuelto:"), Money::formatCents(sale.change), columns);
     out << rule;
 
+    // Devoluciones de esta venta
+    if (!sale.refunds.isEmpty()) {
+        for (const RefundInfo &r : sale.refunds) {
+            const QDateTime rd = QDateTime::fromString(r.createdAt, QStringLiteral("yyyy-MM-dd HH:mm:ss"));
+            out << justify(tr("Devolución #%1").arg(r.number),
+                           rd.isValid() ? rd.toString(QStringLiteral("dd/MM HH:mm")) : r.createdAt, columns);
+            out << justify(r.method == QLatin1String("transfer") ? tr("  por transferencia") : tr("  en efectivo"),
+                           QStringLiteral("-") + Money::formatCents(r.total), columns);
+            if (!r.reason.isEmpty())
+                out << wrap(tr("Motivo: %1").arg(r.reason), columns, 2);
+        }
+        out << justify(tr("NETO %1:").arg(info.baseCurrency), Money::formatCents(sale.total - sale.refundedTotal()),
+                       columns);
+        out << rule;
+    }
+
     const QString footer = info.footer.trimmed().isEmpty() ? tr("¡Gracias por su compra!") : info.footer;
     for (const QString &l : footer.split(QLatin1Char('\n'))) {
         for (const QString &w : wrap(l, columns))

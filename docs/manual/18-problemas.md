@@ -23,6 +23,10 @@ Abre la caja con **F8** y el fondo inicial. Ver [Caja](ayuda:caja).
 
 Tras 5 errores seguidos hay que esperar 30 segundos. Si el usuario olvidó el PIN, ver [Inicio de sesión y PIN](ayuda:sesion).
 
+## Me equivoqué en una venta
+
+No se borra: haz una devolución o anúlala desde **F10 → Devolver / anular…**. Ver [Devoluciones y anulaciones](ayuda:devoluciones).
+
 ## No se genera el PDF del ticket
 
 El PDF del día está abierto en otro programa (visor de PDF, navegador). Ciérralo y, en Venta, pulsa **F10 → PDF del día**. La venta ya está guardada.
@@ -45,6 +49,7 @@ Se vendió más de lo registrado. Corrígelo con una entrada o un ajuste en [Inv
 - ¿Algún pago por transferencia se cobró como efectivo, o al revés?
 - ¿El vuelto de un pago en USD/MLC se dio bien? El vuelto siempre es en la moneda base.
 - ¿El fondo inicial se contó bien al abrir?
+- ¿Se entregó al cliente el dinero de una devolución en efectivo? Aparece en el recuadro *Devoluciones*.
 
 ## La ganancia sale muy alta
 
@@ -74,6 +79,7 @@ Muestra dónde está la base de datos, su versión, la de SQLite y la de Qt. Si 
 | Respaldos | `Documentos\PosCuba\Respaldos` (o `X:\PosCuba_Respaldos` en la USB) |
 | Tickets PDF | `Documentos\PosCuba\Tickets` |
 | Reportes CSV | `Documentos\PosCuba\Reportes` |
+| Productos exportados y plantilla | `Documentos\PosCuba\Productos` |
 | Este manual en PDF | `Documentos\PosCuba\Manual_PosCuba.pdf` |
 
 No copies ni borres `pos.db` con el programa abierto. Para copias de seguridad usa siempre [Respaldos](ayuda:respaldos).

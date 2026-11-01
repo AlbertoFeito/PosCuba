@@ -30,6 +30,8 @@ public:
     bool setupAdmin(const QString &pin, const QString &confirm, Session *session, QString *error);
 
     bool authenticate(int userId, const QString &pin, Session *session, QString *error);
+    // Autorizacion de un administrador sin iniciar sesion (devoluciones). Cuenta para el bloqueo.
+    bool verifyAdmin(int userId, const QString &pin, QString *error);
     int secondsLocked(int userId) const;
     void clearLockouts() { m_attempts.clear(); }
 
@@ -41,6 +43,7 @@ public:
     bool setActive(int id, bool active, int actingUserId, QString *error);
 
 private:
+    bool checkWithLockout(int userId, const QString &pin, User *user, QString *error);
     struct Attempts
     {
         int failures = 0;

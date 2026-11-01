@@ -110,7 +110,7 @@ bool UserService::checkPin(int userId, const QString &pin)
     return hashPin(pin, salt) == hash;
 }
 
-bool UserService::authenticate(int userId, const QString &pin, Session *session, QString *error)
+bool UserService::checkWithLockout(int userId, const QString &pin, User *user, QString *error)
 {
     const int locked = secondsLocked(userId);
     if (locked > 0) {
@@ -139,8 +139,17 @@ bool UserService::authenticate(int userId, const QString &pin, Session *session,
         }
         return false;
     }
-
     m_attempts.remove(userId);
+    if (user)
+        *user = u;
+    return true;
+}
+
+bool UserService::authenticate(int userId, const QString &pin, Session *session, QString *error)
+{
+    User u;
+    if (!checkWithLockout(userId, pin, &u, error))
+        return false;
     m_users.touchLogin(userId);
     if (session) {
         session->userId = u.id;
@@ -148,6 +157,16 @@ bool UserService::authenticate(int userId, const QString &pin, Session *session,
         session->role = u.role;
     }
     return true;
+}
+
+bool UserService::verifyAdmin(int userId, const QString &pin, QString *error)
+{
+    User u;
+    if (!m_users.get(userId, &u) || u.role != Role::admin()) {
+        setErr(error, tr("Elige un administrador."));
+        return false;
+    }
+    return checkWithLockout(userId, pin, nullptr, error);
 }
 
 int UserService::create(const QString &name, const QString &role, const QString &pin, QString *error)

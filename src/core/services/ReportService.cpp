@@ -2,6 +2,7 @@
 
 #include <QCoreApplication>
 #include <QMap>
+#include <algorithm>
 #include <QSqlQuery>
 #include <QVariant>
 
@@ -59,11 +60,14 @@ QString ReportService::periodLabel(const QDate &start, ReportGroup group)
 
 ReportSummary ReportService::summary(const QDate &from, const QDate &to)
 {
+    // Ventas por fecha de venta; devoluciones por fecha de devolucion (como en la caja).
+    // Una venta anulada no cuenta como venta, pero su importe y su devolucion se compensan.
     ReportSummary s;
     QSqlQuery q(m_db);
-    q.prepare(QStringLiteral("SELECT COUNT(*), COALESCE(SUM(s.total_cents), 0), COALESCE(SUM(s.discount_cents), 0), "
+    q.prepare(QStringLiteral("SELECT COALESCE(SUM(CASE WHEN s.status = 'completed' THEN 1 ELSE 0 END), 0), "
+                             "COALESCE(SUM(s.total_cents), 0), COALESCE(SUM(s.discount_cents), 0), "
                              "COALESCE(SUM(%1), 0), COALESCE(SUM(s.change_cents), 0) "
-                             "FROM sales s WHERE s.status = 'completed' AND s.created_at >= :from AND s.created_at < :to")
+                             "FROM sales s WHERE s.created_at >= :from AND s.created_at < :to")
                   .arg(QString::fromLatin1(kSaleCost)));
     bindRange(q, from, to);
     qint64 change = 0;
@@ -74,13 +78,10 @@ ReportSummary ReportService::summary(const QDate &from, const QDate &to)
         s.cost = q.value(3).toLongLong();
         change = q.value(4).toLongLong();
     }
-    s.profit = s.total - s.cost;
-    s.averageTicket = s.salesCount > 0 ? (s.total + s.salesCount / 2) / s.salesCount : 0;
-    s.marginPercent = s.total > 0 ? int((s.profit * 100 + s.total / 2) / s.total) : 0;
 
     q.prepare(QStringLiteral("SELECT p.method, COALESCE(SUM(p.base_cents), 0) FROM payments p "
                              "JOIN sales s ON s.id = p.sale_id "
-                             "WHERE s.status = 'completed' AND s.created_at >= :from AND s.created_at < :to "
+                             "WHERE s.created_at >= :from AND s.created_at < :to "
                              "GROUP BY p.method"));
     bindRange(q, from, to);
     if (q.exec()) {
@@ -92,6 +93,24 @@ ReportSummary ReportService::summary(const QDate &from, const QDate &to)
         }
     }
     s.cash -= change;
+
+    q.prepare(QStringLiteral("SELECT COUNT(*), COALESCE(SUM(total_cents), 0), COALESCE(SUM(cost_cents), 0), "
+                             "COALESCE(SUM(CASE WHEN method = 'cash' THEN total_cents END), 0), "
+                             "COALESCE(SUM(CASE WHEN method = 'transfer' THEN total_cents END), 0) "
+                             "FROM refunds WHERE created_at >= :from AND created_at < :to"));
+    bindRange(q, from, to);
+    if (q.exec() && q.next()) {
+        s.refundsCount = q.value(0).toInt();
+        s.refunds = q.value(1).toLongLong();
+        s.total -= s.refunds;
+        s.cost -= q.value(2).toLongLong();
+        s.cash -= q.value(3).toLongLong();
+        s.transfer -= q.value(4).toLongLong();
+    }
+
+    s.profit = s.total - s.cost;
+    s.averageTicket = s.salesCount > 0 ? (s.total + s.salesCount / 2) / s.salesCount : 0;
+    s.marginPercent = s.total > 0 ? int((s.profit * 100 + s.total / 2) / s.total) : 0;
     return s;
 }
 
@@ -109,8 +128,9 @@ QVector<PeriodRow> ReportService::byPeriod(const QDate &from, const QDate &to, R
 
     // Una fila por dia; la agrupacion por semana/mes se hace aqui (mismo calculo que periodStart).
     QSqlQuery q(m_db);
-    q.prepare(QStringLiteral("SELECT date(s.created_at), COUNT(*), SUM(s.total_cents), SUM(%1), SUM(s.discount_cents) "
-                             "FROM sales s WHERE s.status = 'completed' AND s.created_at >= :from AND s.created_at < :to "
+    q.prepare(QStringLiteral("SELECT date(s.created_at), SUM(CASE WHEN s.status = 'completed' THEN 1 ELSE 0 END), "
+                             "SUM(s.total_cents), SUM(%1), SUM(s.discount_cents) "
+                             "FROM sales s WHERE s.created_at >= :from AND s.created_at < :to "
                              "GROUP BY date(s.created_at)")
                   .arg(QString::fromLatin1(kSaleCost)));
     bindRange(q, from, to);
@@ -127,6 +147,22 @@ QVector<PeriodRow> ReportService::byPeriod(const QDate &from, const QDate &to, R
         }
     }
 
+    // Devoluciones del periodo (por su fecha)
+    q.prepare(QStringLiteral("SELECT date(created_at), SUM(total_cents), SUM(cost_cents) FROM refunds "
+                             "WHERE created_at >= :from AND created_at < :to GROUP BY date(created_at)"));
+    bindRange(q, from, to);
+    if (q.exec()) {
+        while (q.next()) {
+            const QDate day = QDate::fromString(q.value(0).toString(), QStringLiteral("yyyy-MM-dd"));
+            if (!day.isValid())
+                continue;
+            PeriodRow &r = rows[periodStart(day, group)];
+            r.refunds += q.value(1).toLongLong();
+            r.total -= q.value(1).toLongLong();
+            r.cost -= q.value(2).toLongLong();
+        }
+    }
+
     QVector<PeriodRow> out;
     out.reserve(rows.size());
     for (PeriodRow r : rows) {
@@ -138,36 +174,65 @@ QVector<PeriodRow> ReportService::byPeriod(const QDate &from, const QDate &to, R
 
 QVector<ProductRow> ReportService::topProducts(const QDate &from, const QDate &to, TopOrder order, int limit)
 {
-    QString orderBy;
-    switch (order) {
-    case TopOrder::Revenue: orderBy = QStringLiteral("revenue DESC"); break;
-    case TopOrder::Profit: orderBy = QStringLiteral("(revenue - cost) DESC"); break;
-    default: orderBy = QStringLiteral("qty DESC"); break;
-    }
-
-    QVector<ProductRow> out;
+    QMap<int, ProductRow> byId;
     QSqlQuery q(m_db);
     q.prepare(QStringLiteral(
-        "SELECT i.product_id, MAX(i.product_name), COALESCE(p.unit, 'u'), SUM(i.qty_milli) AS qty, "
-        "SUM(i.line_total_cents) AS revenue, SUM((i.qty_milli * i.cost_cents + 500) / 1000) AS cost "
+        "SELECT i.product_id, MAX(i.product_name), COALESCE(p.unit, 'u'), SUM(i.qty_milli), "
+        "SUM(i.line_total_cents), SUM((i.qty_milli * i.cost_cents + 500) / 1000) "
         "FROM sale_items i JOIN sales s ON s.id = i.sale_id LEFT JOIN products p ON p.id = i.product_id "
-        "WHERE s.status = 'completed' AND s.created_at >= :from AND s.created_at < :to "
-        "GROUP BY i.product_id ORDER BY %1, MAX(i.product_name) LIMIT :limit").arg(orderBy));
+        "WHERE s.created_at >= :from AND s.created_at < :to GROUP BY i.product_id"));
     bindRange(q, from, to);
-    q.bindValue(QStringLiteral(":limit"), limit);
     if (q.exec()) {
         while (q.next()) {
-            ProductRow r;
+            ProductRow &r = byId[q.value(0).toInt()];
             r.productId = q.value(0).toInt();
             r.name = q.value(1).toString();
             r.unit = q.value(2).toString();
             r.qtyMilli = q.value(3).toLongLong();
             r.revenue = q.value(4).toLongLong();
             r.cost = q.value(5).toLongLong();
-            r.profit = r.revenue - r.cost;
-            out.append(r);
         }
     }
+    // Lo devuelto en el periodo se resta (importe de linea proporcional, antes del descuento general).
+    q.prepare(QStringLiteral(
+        "SELECT ri.product_id, SUM(ri.qty_milli), "
+        "SUM(CAST(ROUND(1.0 * i.line_total_cents * ri.qty_milli / i.qty_milli) AS INTEGER)), SUM(ri.cost_cents) "
+        "FROM refund_items ri JOIN refunds r ON r.id = ri.refund_id JOIN sale_items i ON i.id = ri.sale_item_id "
+        "WHERE r.created_at >= :from AND r.created_at < :to GROUP BY ri.product_id"));
+    bindRange(q, from, to);
+    if (q.exec()) {
+        while (q.next()) {
+            auto it = byId.find(q.value(0).toInt());
+            if (it == byId.end())
+                continue;   // vendido antes del periodo: no aparece en la lista
+            it->qtyMilli -= q.value(1).toLongLong();
+            it->revenue -= q.value(2).toLongLong();
+            it->cost -= q.value(3).toLongLong();
+        }
+    }
+
+    QVector<ProductRow> out;
+    for (ProductRow r : byId) {
+        if (r.qtyMilli <= 0 && r.revenue <= 0)
+            continue;   // todo devuelto
+        r.profit = r.revenue - r.cost;
+        out.append(r);
+    }
+    std::stable_sort(out.begin(), out.end(), [order](const ProductRow &a, const ProductRow &b) {
+        qint64 va = a.qtyMilli, vb = b.qtyMilli;
+        if (order == TopOrder::Revenue) {
+            va = a.revenue;
+            vb = b.revenue;
+        } else if (order == TopOrder::Profit) {
+            va = a.profit;
+            vb = b.profit;
+        }
+        if (va != vb)
+            return va > vb;
+        return a.name.localeAwareCompare(b.name) < 0;
+    });
+    if (limit >= 0 && out.size() > limit)
+        out.resize(limit);
     return out;
 }
 
@@ -178,9 +243,10 @@ QVector<SaleReportRow> ReportService::sales(const QDate &from, const QDate &to)
     q.prepare(QStringLiteral(
         "SELECT s.number, s.created_at, u.name, s.subtotal_cents, s.discount_cents, s.total_cents, %1, "
         "(SELECT COALESCE(SUM(base_cents), 0) FROM payments WHERE sale_id = s.id AND method = 'cash') - s.change_cents, "
-        "(SELECT COALESCE(SUM(base_cents), 0) FROM payments WHERE sale_id = s.id AND method = 'transfer') "
+        "(SELECT COALESCE(SUM(base_cents), 0) FROM payments WHERE sale_id = s.id AND method = 'transfer'), "
+        "(SELECT COALESCE(SUM(total_cents), 0) FROM refunds WHERE sale_id = s.id), s.status "
         "FROM sales s LEFT JOIN users u ON u.id = s.user_id "
-        "WHERE s.status = 'completed' AND s.created_at >= :from AND s.created_at < :to ORDER BY s.id")
+        "WHERE s.created_at >= :from AND s.created_at < :to ORDER BY s.id")
                   .arg(QString::fromLatin1(kSaleCost)));
     bindRange(q, from, to);
     if (q.exec()) {
@@ -195,6 +261,8 @@ QVector<SaleReportRow> ReportService::sales(const QDate &from, const QDate &to)
             r.cost = q.value(6).toLongLong();
             r.cash = q.value(7).toLongLong();
             r.transfer = q.value(8).toLongLong();
+            r.refunded = q.value(9).toLongLong();
+            r.voided = q.value(10).toString() == QLatin1String("voided");
             out.append(r);
         }
     }

@@ -57,11 +57,39 @@ Dialog {
 
     property string lastPdf: ""
 
+    function selectedSale() {
+        return list.currentIndex >= 0 && list.currentIndex < sales.length ? sales[list.currentIndex] : null
+    }
+
+    function refundSelected() {
+        var id = selectedId()
+        if (id > 0)
+            refundDialog.openFor(id)
+    }
+
+    RefundDialog {
+        id: refundDialog
+        onDone: {
+            var keep = list.currentIndex
+            dlg.sales = ticketCtrl.recentSales(50)
+            list.currentIndex = Math.min(keep, dlg.sales.length - 1)
+            dlg.updatePreview()
+            dlg.notify(refundDialog.doneText, false)
+            // El PDF del dia muestra la devolucion en el ticket de la venta.
+            if (ticketCtrl.usesPdf) {
+                var r = ticketCtrl.exportSalePdf(refundCtrl.lastSaleId)
+                if (!r.ok)
+                    dlg.notify(r.error, true)
+            }
+        }
+        onClosed: list.forceActiveFocus()
+    }
+
     title: qsTr("Ventas recientes")
     modal: true
     parent: Overlay.overlay
     anchors.centerIn: parent
-    width: Math.min(900, parent.width - 40)
+    width: Math.min(1120, parent.width - 40)
     height: Math.min(620, parent.height - 40)
     onOpened: list.forceActiveFocus()
 
@@ -81,6 +109,11 @@ Dialog {
             onCurrentIndexChanged: dlg.updatePreview()
             Keys.onReturnPressed: dlg.printSelected()
             Keys.onEnterPressed: dlg.printSelected()
+            Keys.onDeletePressed: {
+                var sel = dlg.selectedSale()
+                if (sel && !sel.voided)
+                    dlg.refundSelected()
+            }
 
             delegate: Rectangle {
                 width: list.width
@@ -95,8 +128,9 @@ Dialog {
                         Label { text: qsTr("#%1 · %2").arg(modelData.number).arg(modelData.dateText); font.bold: true }
                         Label {
                             text: qsTr("%1 línea(s) · %2").arg(modelData.itemCount).arg(modelData.userName)
-                                  + (modelData.voided ? " · " + qsTr("ANULADA") : "")
-                            color: modelData.voided ? Theme.danger : Theme.textMuted
+                                  + (modelData.voided ? " · " + qsTr("ANULADA")
+                                     : modelData.refunded ? " · " + qsTr("devuelto %1").arg(modelData.refundedText) : "")
+                            color: modelData.voided ? Theme.danger : (modelData.refunded ? Theme.warning : Theme.textMuted)
                             font.pixelSize: Theme.fontSmall
                         }
                     }
@@ -158,6 +192,13 @@ Dialog {
                     focusPolicy: Qt.NoFocus
                     onClicked: ticketCtrl.openFolder("")
                     HelpTip { text: qsTr("Abre la carpeta de los tickets en PDF.") }
+                }
+                Button {
+                    text: qsTr("Devolver / anular… (Supr)")
+                    enabled: list.count > 0 && dlg.selectedSale() !== null && !dlg.selectedSale().voided
+                    focusPolicy: Qt.NoFocus
+                    onClicked: dlg.refundSelected()
+                    HelpTip { text: qsTr("Devuelve productos de la venta elegida o la anula completa. El dinero sale de la caja abierta o se devuelve por transferencia. Un cajero necesita el PIN de un administrador.") }
                 }
                 Item { Layout.fillWidth: true }
                 Button { text: qsTr("Cerrar (Esc)"); focusPolicy: Qt.NoFocus; onClicked: dlg.close() }

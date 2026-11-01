@@ -15,6 +15,7 @@ CashService::CashService(QSqlDatabase db)
     : m_db(db)
     , m_cash(db)
     , m_currencies(db)
+    , m_refunds(db)
 {
 }
 
@@ -85,6 +86,16 @@ CashSummary CashService::summary(const CashSession &session)
         s.expected.append(ca);
     }
     s.cashSales = cashBase - st.change;
+
+    // Devoluciones hechas en esta caja: el efectivo sale de la gaveta en moneda base.
+    const RefundTotals rf = m_refunds.sessionTotals(session.id);
+    s.refundsCount = rf.count;
+    s.refundsTotal = rf.total;
+    s.salesTotal -= rf.total;
+    s.profit -= rf.total - rf.cost;
+    s.cashSales -= rf.cash;
+    s.transferSales -= rf.transfer;
+    s.expected[0].expectedCents -= rf.cash;
     return s;
 }
 

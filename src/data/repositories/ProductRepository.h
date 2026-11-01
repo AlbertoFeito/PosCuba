@@ -24,6 +24,9 @@ public:
     bool get(int id, Product *out);
     // Producto activo cuyo codigo o codigo de barras es exactamente text.
     bool findExact(const QString &text, Product *out);
+    // Activo o no, por codigo o por codigo de barras exactos.
+    bool getByCode(const QString &code, Product *out);
+    bool getByBarcode(const QString &barcode, Product *out);
     bool codeExists(const QString &code, int excludeId);
     bool barcodeExists(const QString &barcode, int excludeId);
     int insert(const Product &p);            // id, o -1 si falla
@@ -35,6 +38,7 @@ public:
     bool stockOf(int id, qint64 *stockMilli);
     bool setStock(int id, qint64 stockMilli);
     bool setCost(int id, qint64 costCents);
+    bool setPrice(int id, qint64 priceCents);
     int countLowStock();
 
     QString lastError() const { return m_lastError; }
