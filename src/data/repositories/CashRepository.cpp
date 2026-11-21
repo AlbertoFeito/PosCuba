@@ -216,3 +216,35 @@ void CashRepository::movementTotals(int sessionId, qint64 *in, qint64 *out)
     if (out)
         *out = o;
 }
+
+bool CashRepository::deleteMovement(int movementId)
+{
+    QSqlQuery q(m_db);
+    q.prepare(QStringLiteral("DELETE FROM cash_movements WHERE id = :id"));
+    q.bindValue(QStringLiteral(":id"), movementId);
+    if (!q.exec()) {
+        m_lastError = q.lastError().text();
+        return false;
+    }
+    return q.numRowsAffected() == 1;
+}
+
+void CashRepository::creditStats(int sessionId, qint64 *creditSold, qint64 *paymentsCash, qint64 *paymentsTransfer)
+{
+    *creditSold = 0;
+    *paymentsCash = 0;
+    *paymentsTransfer = 0;
+    QSqlQuery q(m_db);
+    q.prepare(QStringLiteral("SELECT COALESCE(SUM(credit_cents), 0) FROM sales WHERE session_id = :s"));
+    q.bindValue(QStringLiteral(":s"), sessionId);
+    if (q.exec() && q.next())
+        *creditSold = q.value(0).toLongLong();
+    q.prepare(QStringLiteral("SELECT COALESCE(SUM(CASE WHEN method = 'cash' THEN amount_cents END), 0), "
+                             "COALESCE(SUM(CASE WHEN method = 'transfer' THEN amount_cents END), 0) "
+                             "FROM customer_entries WHERE kind = 'payment' AND session_id = :s"));
+    q.bindValue(QStringLiteral(":s"), sessionId);
+    if (q.exec() && q.next()) {
+        *paymentsCash = q.value(0).toLongLong();
+        *paymentsTransfer = q.value(1).toLongLong();
+    }
+}

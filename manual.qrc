@@ -7,16 +7,18 @@
         <file>docs/manual/05-devoluciones.md</file>
         <file>docs/manual/06-tickets.md</file>
         <file>docs/manual/07-caja.md</file>
-        <file>docs/manual/08-productos.md</file>
-        <file>docs/manual/09-precios.md</file>
-        <file>docs/manual/10-importar.md</file>
-        <file>docs/manual/11-inventario.md</file>
-        <file>docs/manual/12-reportes.md</file>
-        <file>docs/manual/13-configuracion.md</file>
-        <file>docs/manual/14-monedas.md</file>
-        <file>docs/manual/15-usuarios.md</file>
-        <file>docs/manual/16-respaldos.md</file>
-        <file>docs/manual/17-atajos.md</file>
-        <file>docs/manual/18-problemas.md</file>
+        <file>docs/manual/08-clientes.md</file>
+        <file>docs/manual/09-gastos.md</file>
+        <file>docs/manual/10-productos.md</file>
+        <file>docs/manual/11-precios.md</file>
+        <file>docs/manual/12-importar.md</file>
+        <file>docs/manual/13-inventario.md</file>
+        <file>docs/manual/14-reportes.md</file>
+        <file>docs/manual/15-configuracion.md</file>
+        <file>docs/manual/16-monedas.md</file>
+        <file>docs/manual/17-usuarios.md</file>
+        <file>docs/manual/18-respaldos.md</file>
+        <file>docs/manual/19-atajos.md</file>
+        <file>docs/manual/20-problemas.md</file>
     </qresource>
 </RCC>

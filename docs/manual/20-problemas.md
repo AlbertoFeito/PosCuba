@@ -50,10 +50,17 @@ Se vendió más de lo registrado. Corrígelo con una entrada o un ajuste en [Inv
 - ¿El vuelto de un pago en USD/MLC se dio bien? El vuelto siempre es en la moneda base.
 - ¿El fondo inicial se contó bien al abrir?
 - ¿Se entregó al cliente el dinero de una devolución en efectivo? Aparece en el recuadro *Devoluciones*.
+- ¿Alguna venta fiada se cobró en efectivo sin marcar F9, o al revés? Lo fiado no está en la gaveta.
+- ¿Un abono se registró como efectivo pero llegó por transferencia?
+- Un gasto pagado de la caja con *Pagado con dinero de la caja* sin marcar no se resta de la gaveta: bórralo y regístralo de nuevo marcado.
 
 ## La ganancia sale muy alta
 
 Hay productos sin **precio de costo**: toda su venta cuenta como ganancia. Carga los costos en Productos o al registrar las entradas.
+
+## La ganancia neta sale negativa
+
+Los gastos del período superan la ganancia bruta. Revisa en [Gastos](ayuda:gastos) que no haya compras de mercancía anotadas como gasto (esas van en Inventario) ni gastos repetidos.
 
 ## El CSV se abre en una sola columna en Excel
 

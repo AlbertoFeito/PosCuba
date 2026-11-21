@@ -5,5 +5,6 @@
         <file alias="003_cash.sql">src/data/migrations/003_cash.sql</file>
         <file alias="004_users.sql">src/data/migrations/004_users.sql</file>
         <file alias="005_refunds.sql">src/data/migrations/005_refunds.sql</file>
+        <file alias="006_credit_expenses.sql">src/data/migrations/006_credit_expenses.sql</file>
     </qresource>
 </RCC>

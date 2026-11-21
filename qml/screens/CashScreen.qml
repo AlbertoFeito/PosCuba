@@ -94,7 +94,7 @@ Item {
                 GridLayout {
                     visible: cashCtrl.isOpen
                     Layout.fillWidth: true
-                    columns: 4
+                    columns: 5
                     columnSpacing: 12
                     rowSpacing: 12
 
@@ -116,7 +116,12 @@ Item {
                               "tip": qsTr("Dinero sacado de la gaveta con el botón Retiro.") },
                             { "label": qsTr("Devoluciones"),
                               "value": (root.s.refundsCount || 0) > 0 ? root.s.refundsText + "  (" + root.s.refundsCount + ")" : "0.00",
-                              "tip": qsTr("Dinero devuelto a clientes en esta caja (efectivo y transferencia). Ya está restado del total vendido y del efectivo esperado.") }
+                              "tip": qsTr("Dinero devuelto a clientes en esta caja (efectivo y transferencia). Ya está restado del total vendido y del efectivo esperado.") },
+                            { "label": qsTr("A crédito (fiado)"), "value": root.s.creditSalesText || "0.00",
+                              "tip": qsTr("Vendido a crédito en esta caja: está en el total vendido pero no entró dinero.") },
+                            { "label": qsTr("Abonos de clientes"), "value": root.s.creditPaymentsText || "0.00",
+                              "tip": qsTr("Lo que pagaron los clientes de sus deudas en esta caja. Los abonos en efectivo suman al efectivo esperado.")
+                                     + (root.s.creditPaymentsDetail ? " " + root.s.creditPaymentsDetail : "") }
                         ]
                         delegate: Rectangle {
                             Layout.fillWidth: true

@@ -20,7 +20,11 @@ Dialog {
     property bool lastHasChange: false
     signal completed()
 
+    property var customers: []
     readonly property bool multiCurrency: saleCtrl.currencies.length > 1
+    readonly property var selectedCustomer: creditCheck.checked && customerCombo.currentIndex >= 0
+                                            && customerCombo.currentIndex < customers.length
+                                            ? customers[customerCombo.currentIndex] : null
     readonly property var selectedCurrency: saleCtrl.currencies.length > 0
                                             ? saleCtrl.currencies[Math.max(0, currencyCombo.currentIndex)] : ({})
 
@@ -30,6 +34,8 @@ Dialog {
             "cashCurrency": selectedCurrency.code || "",
             "transfer": transferField.text,
             "reference": referenceField.text,
+            "credit": creditCheck.checked,
+            "customerId": dlg.selectedCustomer ? dlg.selectedCustomer.id : 0,
             "allowNegative": allowNegative === true
         }
     }
@@ -43,6 +49,9 @@ Dialog {
         transferField.text = ""
         referenceField.text = ""
         currencyCombo.currentIndex = 0
+        creditCheck.checked = false
+        customers = customerCtrl.pick("")
+        customerCombo.currentIndex = -1
         printTicket.checked = ticketCtrl.autoPrint
         errorText = ""
         updatePreview()
@@ -86,8 +95,22 @@ Dialog {
         }
     }
 
+    function reloadCustomers(selectId) {
+        customers = customerCtrl.pick("")
+        for (var i = 0; i < customers.length; ++i) {
+            if (customers[i].id === selectId)
+                customerCombo.currentIndex = i
+        }
+        updatePreview()
+    }
+
     function confirm() {
         updatePreview()
+        if (creditCheck.checked && !dlg.selectedCustomer) {
+            errorText = qsTr("Elige el cliente que se lleva la mercancía a crédito.")
+            customerCombo.forceActiveFocus()
+            return
+        }
         if (!preview.valid) {
             errorText = preview.error
             return
@@ -114,9 +137,23 @@ Dialog {
         }
     }
 
+    // F9: dejar lo que falta a credito (fiado)
+    Shortcut {
+        sequence: "F9"
+        enabled: dlg.visible && !stockConfirm.visible && !customerDialog.visible
+        onActivated: {
+            creditCheck.checked = !creditCheck.checked
+            dlg.updatePreview()
+            if (creditCheck.checked)
+                customerCombo.forceActiveFocus()
+            else
+                cashField.forceActiveFocus()
+        }
+    }
+
     Shortcut {
         sequence: "Ctrl+S"
-        enabled: dlg.visible && !stockConfirm.visible
+        enabled: dlg.visible && !stockConfirm.visible && !customerDialog.visible
         onActivated: dlg.confirm()
     }
 
@@ -219,6 +256,55 @@ Dialog {
                     HelpTip { text: qsTr("Número de la transacción, para identificarla luego. Sale en el ticket. Opcional.") }
                 }
             }
+
+            Label { text: qsTr("A crédito"); font.bold: true }
+            RowLayout {
+                Layout.fillWidth: true
+                CheckBox {
+                    id: creditCheck
+                    text: qsTr("Lo que falta (F9)")
+                    focusPolicy: Qt.NoFocus
+                    onToggled: {
+                        dlg.errorText = ""
+                        dlg.updatePreview()
+                        if (checked)
+                            customerCombo.forceActiveFocus()
+                    }
+                    HelpTip { text: qsTr("Fiado: lo que no se paga ahora queda como deuda del cliente elegido. Se puede combinar con efectivo o transferencia.") }
+                }
+                ComboBox {
+                    id: customerCombo
+                    Layout.fillWidth: true
+                    enabled: creditCheck.checked
+                    model: dlg.customers
+                    textRole: "name"
+                    displayText: currentIndex >= 0 ? currentText : qsTr("Elegir cliente…")
+                    onActivated: { dlg.errorText = ""; dlg.updatePreview() }
+                    // Enter con la lista cerrada confirma la venta, igual que en los importes.
+                    Keys.onReturnPressed: { if (popup.visible) event.accepted = false; else dlg.confirm() }
+                    Keys.onEnterPressed: { if (popup.visible) event.accepted = false; else dlg.confirm() }
+                    HelpTip { text: qsTr("Cliente que queda debiendo. Escribe las primeras letras para buscarlo en la lista.") }
+                }
+                Button {
+                    text: "+"
+                    enabled: creditCheck.checked
+                    focusPolicy: Qt.NoFocus
+                    implicitWidth: 36
+                    onClicked: customerDialog.openNew()
+                    HelpTip { text: qsTr("Crear un cliente nuevo sin salir del cobro.") }
+                }
+            }
+
+            Item { width: 1; height: 1; visible: dlg.selectedCustomer !== null }
+            Label {
+                visible: dlg.selectedCustomer !== null
+                text: dlg.selectedCustomer
+                      ? (dlg.selectedCustomer.hasLimit ? qsTr("Debe ahora %1 · límite %2").arg(dlg.selectedCustomer.balanceText).arg(dlg.selectedCustomer.limitText)
+                                                         : qsTr("Debe ahora %1 · sin límite").arg(dlg.selectedCustomer.balanceText))
+                      : ""
+                color: dlg.selectedCustomer && dlg.selectedCustomer.overLimit ? Theme.danger : Theme.textMuted
+                font.pixelSize: Theme.fontSmall
+            }
         }
 
         Rectangle { Layout.fillWidth: true; height: 1; color: Theme.border }
@@ -227,6 +313,14 @@ Dialog {
             Layout.fillWidth: true
             Label { text: qsTr("Pagado: %1").arg(dlg.preview.paidText || "0.00"); color: Theme.textMuted; Layout.fillWidth: true }
             Label {
+                visible: dlg.preview.hasCredit === true
+                text: qsTr("A crédito: %1").arg(dlg.preview.creditText || "")
+                color: Theme.warning
+                font.pixelSize: 24
+                font.bold: true
+                HelpTip { text: qsTr("Queda como deuda del cliente. Lo verá en Clientes y lo podrá pagar con abonos.") }
+            }
+            Label {
                 visible: dlg.preview.hasRemaining === true
                 text: qsTr("Falta: %1").arg(dlg.preview.remainingText || "")
                 color: Theme.danger
@@ -234,7 +328,7 @@ Dialog {
                 font.bold: true
             }
             Label {
-                visible: dlg.preview.hasRemaining !== true
+                visible: dlg.preview.hasRemaining !== true && dlg.preview.hasCredit !== true
                 text: qsTr("Vuelto: %1").arg(dlg.preview.changeText || "0.00")
                 color: Theme.success
                 font.pixelSize: 24
@@ -262,11 +356,17 @@ Dialog {
             Button { text: qsTr("Volver (Esc)"); onClicked: dlg.close(); HelpTip { text: qsTr("Regresa al carrito sin cobrar.") } }
             PrimaryButton {
                 text: qsTr("Confirmar venta (Enter)")
-                enabled: dlg.preview.valid === true
+                enabled: dlg.preview.valid === true && (!creditCheck.checked || dlg.selectedCustomer !== null)
                 onClicked: dlg.confirm()
                 HelpTip { text: qsTr("Registra la venta, los pagos y descuenta el stock. Se activa cuando no falta dinero.") }
             }
         }
+    }
+
+    CustomerDialog {
+        id: customerDialog
+        onSaved: dlg.reloadCustomers(customerDialog.savedId)
+        onClosed: customerCombo.forceActiveFocus()
     }
 
     Dialog {

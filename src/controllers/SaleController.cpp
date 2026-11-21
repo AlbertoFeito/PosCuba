@@ -209,6 +209,18 @@ bool SaleController::buildPayments(const QVariantMap &form, QVector<Payment> *ou
         p.reference = form.value(QStringLiteral("reference")).toString();
         out->append(p);
     }
+    // Fiado: lo que falta queda a credito del cliente elegido.
+    if (form.value(QStringLiteral("credit")).toBool()) {
+        const SaleTotals t = SaleCalculator::compute(m_cart.lines(), discount(), *out);
+        if (t.remaining > 0) {
+            Payment p;
+            p.method = PaymentMethod::credit();
+            p.currency = m_baseCurrency;
+            p.amountCents = t.remaining;
+            p.rateMilli = 1000;
+            out->append(p);
+        }
+    }
     return true;
 }
 
@@ -226,11 +238,13 @@ QVariantMap SaleController::previewPayment(const QVariantMap &form) const
     error = SaleCalculator::validatePayments(t, payments);
     r.insert(QStringLiteral("valid"), error.isEmpty());
     r.insert(QStringLiteral("error"), error);
-    r.insert(QStringLiteral("paidText"), Money::formatCents(t.paid));
+    r.insert(QStringLiteral("paidText"), Money::formatCents(t.cashPaid + t.transferPaid));   // sin lo fiado
     r.insert(QStringLiteral("changeText"), Money::formatCents(t.change));
     r.insert(QStringLiteral("remainingText"), Money::formatCents(t.remaining));
     r.insert(QStringLiteral("hasChange"), t.change > 0);
     r.insert(QStringLiteral("hasRemaining"), t.remaining > 0);
+    r.insert(QStringLiteral("creditText"), Money::formatCents(t.creditPaid));
+    r.insert(QStringLiteral("hasCredit"), t.creditPaid > 0);
     return r;
 }
 
@@ -247,7 +261,8 @@ QVariantMap SaleController::checkout(const QVariantMap &form)
 
     const CheckoutResult res = m_saleService.checkout(m_cart.lines(), discount(), payments,
                                                       m_session ? m_session->userId : 0,
-                                                      form.value(QStringLiteral("allowNegative")).toBool());
+                                                      form.value(QStringLiteral("allowNegative")).toBool(),
+                                                      form.value(QStringLiteral("customerId")).toInt());
     r.insert(QStringLiteral("ok"), res.ok);
     r.insert(QStringLiteral("error"), res.error);
     r.insert(QStringLiteral("stockIssues"), QVariant(res.stockIssues));
@@ -256,6 +271,8 @@ QVariantMap SaleController::checkout(const QVariantMap &form)
     r.insert(QStringLiteral("changeText"), Money::formatCents(res.change));
     r.insert(QStringLiteral("hasChange"), res.change > 0);
     if (res.ok) {
+        if (form.value(QStringLiteral("credit")).toBool())
+            emit creditSale();
         clearCart();
         emit saleCompleted(res.number);
     }

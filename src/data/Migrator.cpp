@@ -19,6 +19,7 @@ const Migration kMigrations[] = {
     {3, ":/sql/003_cash.sql"},
     {4, ":/sql/004_users.sql"},
     {5, ":/sql/005_refunds.sql"},
+    {6, ":/sql/006_credit_expenses.sql"},
 };
 
 } // namespace

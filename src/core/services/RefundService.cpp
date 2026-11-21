@@ -24,6 +24,7 @@ RefundService::RefundService(QSqlDatabase db)
     , m_cashRepo(db)
     , m_cash(db)
     , m_inventory(db)
+    , m_customers(db)
 {
 }
 
@@ -111,7 +112,8 @@ RefundResult RefundService::refund(const RefundRequest &req)
 {
     if (req.reason.trimmed().isEmpty())
         return fail(tr("Indica el motivo de la devolución."));
-    if (req.method != PaymentMethod::cash() && req.method != PaymentMethod::transfer())
+    if (req.method != PaymentMethod::cash() && req.method != PaymentMethod::transfer()
+        && req.method != PaymentMethod::credit())
         return fail(tr("Forma de devolución no válida."));
     if (req.userId <= 0)
         return fail(tr("No hay un usuario activo."));
@@ -130,6 +132,9 @@ RefundResult RefundService::refund(const RefundRequest &req)
     QString error;
     if (!calculate(st, req.qtyByItem, req.all, &calc, &error))
         return fail(error);
+
+    if (req.method == PaymentMethod::credit() && st.customerId <= 0)
+        return fail(tr("Esta venta no fue a crédito: no hay cuenta de cliente a la que devolver."));
 
     CashSession session;
     if (!m_cashRepo.current(&session))
@@ -172,6 +177,12 @@ RefundResult RefundService::refund(const RefundRequest &req)
                 return fail(error);
         }
     }
+
+    if (req.method == PaymentMethod::credit() && calc.total > 0
+        && !m_customers.insertEntry(st.customerId, CustomerEntryKind::refund(), calc.total, st.saleId, refundId,
+                                    session.id, QString(), tr("Devolución #%1 · venta #%2").arg(number).arg(st.number),
+                                    req.userId))
+        return fail(tr("No se pudo rebajar la deuda del cliente: %1").arg(m_customers.lastError()));
 
     if (calc.completesSale && !m_refunds.setSaleStatus(st.saleId, QStringLiteral("voided")))
         return fail(tr("No se pudo anular la venta: %1").arg(m_refunds.lastError()));

@@ -30,7 +30,7 @@ Item {
         syncFields()
     }
 
-    onVisibleChanged: if (visible) reportCtrl.refresh()
+    onVisibleChanged: if (visible) { expenseCtrl.reload(); reportCtrl.refresh() }
 
     // Sin Connections: "function onX()" no existe en Qt 5.14 y la forma antigua avisa en Qt 6.
     function syncFields() {
@@ -94,19 +94,25 @@ Item {
             spacing: 10
             Repeater {
                 model: [
-                    { "label": qsTr("Ventas"), "value": String(root.s.salesCount || 0), "hint": "",
-                      "tip": qsTr("Cantidad de ventas del período.") },
+                    { "label": qsTr("Ventas"), "value": String(root.s.salesCount || 0),
+                      "hint": (root.s.salesCount || 0) > 0 ? qsTr("promedio %1").arg(root.s.averageText) : "",
+                      "tip": qsTr("Cantidad de ventas del período y el ticket promedio (lo que gasta cada cliente).") },
                     { "label": qsTr("Total vendido"), "value": root.s.totalText || "", "hint": [ root.s.discountText && root.s.discountText !== "0.00" ? qsTr("descuentos %1").arg(root.s.discountText) : "",
                                                                                         (root.s.refundsCount || 0) > 0 ? qsTr("devoluciones %1").arg(root.s.refundsText) : "" ].filter(function(t) { return t !== "" }).join(" · "),
                       "tip": qsTr("Suma de los totales cobrados, ya restados los descuentos y lo devuelto a clientes en el período.") },
-                    { "label": qsTr("Ganancia"), "value": root.s.profitText || "", "hint": qsTr("margen %1 %").arg(root.s.marginPercent || 0),
+                    { "label": qsTr("Ganancia bruta"), "value": root.s.profitText || "", "hint": qsTr("margen %1 %").arg(root.s.marginPercent || 0),
                       "tip": qsTr("Total vendido menos el costo de lo vendido (costo al momento de cada venta). El margen es la ganancia sobre el total.") },
-                    { "label": qsTr("Ticket promedio"), "value": root.s.averageText || "", "hint": "",
-                      "tip": qsTr("Lo que gasta en promedio cada cliente: total vendido ÷ ventas.") },
+                    { "label": qsTr("Gastos"), "value": root.s.expensesText || "", "hint": "",
+                      "tip": qsTr("Gastos del negocio en el período (alquiler, electricidad, salarios…). Se registran en Gastos.") },
+                    { "label": qsTr("Ganancia neta"), "value": root.s.netProfitText || "", "hint": "", "negative": root.s.netNegative === true,
+                      "tip": qsTr("Ganancia bruta menos los gastos: lo que realmente le queda al negocio.") },
                     { "label": qsTr("Efectivo"), "value": root.s.cashText || "", "hint": "",
                       "tip": qsTr("Cobrado en efectivo, convertido a la moneda base y sin el vuelto.") },
                     { "label": qsTr("Transferencias"), "value": root.s.transferText || "", "hint": "",
-                      "tip": qsTr("Cobrado por transferencia.") }
+                      "tip": qsTr("Cobrado por transferencia.") },
+                    { "label": qsTr("A crédito"), "value": root.s.creditText || "",
+                      "hint": root.s.hasCreditPayments ? qsTr("abonos %1").arg(root.s.creditPaymentsText) : "",
+                      "tip": qsTr("Vendido a crédito (fiado) en el período. Debajo, lo que los clientes abonaron de sus deudas.") }
                 ]
                 delegate: Rectangle {
                     // ancho preferido distinto de 0: si no, RowLayout los apila en x = 0
@@ -121,7 +127,15 @@ Item {
                         anchors.margins: 10
                         spacing: 2
                         Label { text: modelData.label; color: Theme.textMuted; font.pixelSize: Theme.fontSmall }
-                        Label { text: modelData.value; font.pixelSize: Theme.fontSize + 6; font.bold: true }
+                        Label {
+                            width: parent.width
+                            text: modelData.value
+                            font.pixelSize: Theme.fontSize + 5
+                            font.bold: true
+                            fontSizeMode: Text.HorizontalFit
+                            minimumPixelSize: 12
+                            color: modelData.negative === true ? Theme.danger : Theme.text
+                        }
                         Label { text: modelData.hint; color: Theme.textMuted; font.pixelSize: Theme.fontSmall - 1; visible: text !== "" }
                     }
                     HelpTip { text: modelData.tip }
@@ -240,7 +254,7 @@ Item {
             Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                Layout.preferredWidth: 4
+                Layout.preferredWidth: 5
                 color: Theme.surface
                 border.color: Theme.border
                 radius: Theme.radius
@@ -260,13 +274,18 @@ Item {
                             anchors.rightMargin: 10
                             Label { width: periodList.colLabel; height: parent.height; verticalAlignment: Text.AlignVCenter; text: qsTr("Período"); font.bold: true; color: Theme.textMuted }
                             Label { width: 60; height: parent.height; verticalAlignment: Text.AlignVCenter; horizontalAlignment: Text.AlignRight; text: qsTr("Ventas"); font.bold: true; color: Theme.textMuted }
-                            Label { width: 110; height: parent.height; verticalAlignment: Text.AlignVCenter; horizontalAlignment: Text.AlignRight; text: qsTr("Total"); font.bold: true; color: Theme.textMuted }
-                            Label { width: 110; height: parent.height; verticalAlignment: Text.AlignVCenter; horizontalAlignment: Text.AlignRight; text: qsTr("Ganancia"); font.bold: true; color: Theme.textMuted }
+                            Label { width: 100; height: parent.height; verticalAlignment: Text.AlignVCenter; horizontalAlignment: Text.AlignRight; text: qsTr("Total"); font.bold: true; color: Theme.textMuted }
+                            Label { width: 100; height: parent.height; verticalAlignment: Text.AlignVCenter; horizontalAlignment: Text.AlignRight; text: qsTr("Ganancia"); font.bold: true; color: Theme.textMuted }
+                            Label {
+                                width: 90; height: parent.height; verticalAlignment: Text.AlignVCenter; horizontalAlignment: Text.AlignRight
+                                text: qsTr("Gastos"); font.bold: true; color: Theme.textMuted
+                                HelpTip { text: qsTr("Gastos registrados en cada período (por su fecha).") }
+                            }
                         }
                     }
                     ListView {
                         id: periodList
-                        readonly property int colLabel: Math.max(90, width - 20 - 60 - 220)
+                        readonly property int colLabel: Math.max(90, width - 20 - 60 - 290)
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         clip: true
@@ -284,11 +303,16 @@ Item {
                                 anchors.rightMargin: 10
                                 Label { width: periodList.colLabel; height: parent.height; verticalAlignment: Text.AlignVCenter; text: modelData.label }
                                 Label { width: 60; height: parent.height; verticalAlignment: Text.AlignVCenter; horizontalAlignment: Text.AlignRight; text: modelData.salesCount }
-                                Label { width: 110; height: parent.height; verticalAlignment: Text.AlignVCenter; horizontalAlignment: Text.AlignRight; text: modelData.totalText; font.bold: true }
+                                Label { width: 100; height: parent.height; verticalAlignment: Text.AlignVCenter; horizontalAlignment: Text.AlignRight; text: modelData.totalText; font.bold: true }
                                 Label {
-                                    width: 110; height: parent.height; verticalAlignment: Text.AlignVCenter; horizontalAlignment: Text.AlignRight
+                                    width: 100; height: parent.height; verticalAlignment: Text.AlignVCenter; horizontalAlignment: Text.AlignRight
                                     text: modelData.profitText
                                     color: modelData.profitNegative ? Theme.danger : Theme.success
+                                }
+                                Label {
+                                    width: 90; height: parent.height; verticalAlignment: Text.AlignVCenter; horizontalAlignment: Text.AlignRight
+                                    text: modelData.expensesText
+                                    color: Theme.textMuted
                                 }
                             }
                         }
@@ -300,7 +324,7 @@ Item {
             Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                Layout.preferredWidth: 6
+                Layout.preferredWidth: 5
                 color: Theme.surface
                 border.color: Theme.border
                 radius: Theme.radius

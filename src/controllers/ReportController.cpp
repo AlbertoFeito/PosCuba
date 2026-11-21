@@ -158,6 +158,12 @@ void ReportController::refresh()
         {QStringLiteral("averageText"), Money::formatCents(s.averageTicket)},
         {QStringLiteral("refundsText"), Money::formatCents(s.refunds)},
         {QStringLiteral("refundsCount"), s.refundsCount},
+        {QStringLiteral("creditText"), Money::formatCents(s.credit)},
+        {QStringLiteral("creditPaymentsText"), Money::formatCents(s.creditPayments)},
+        {QStringLiteral("hasCreditPayments"), s.creditPayments > 0},
+        {QStringLiteral("expensesText"), Money::formatCents(s.expenses)},
+        {QStringLiteral("netProfitText"), Money::formatCents(s.netProfit)},
+        {QStringLiteral("netNegative"), s.netProfit < 0},
         {QStringLiteral("days"), int(days)},
     };
 
@@ -172,6 +178,7 @@ void ReportController::refresh()
             {QStringLiteral("totalText"), Money::formatCents(r.total)},
             {QStringLiteral("profitText"), Money::formatCents(r.profit)},
             {QStringLiteral("profitNegative"), r.profit < 0},
+            {QStringLiteral("expensesText"), r.expenses > 0 ? Money::formatCents(r.expenses) : QStringLiteral("—")},
         });
     }
 
@@ -206,7 +213,8 @@ QVariantMap ReportController::exportPeriods()
         rows.append({r.start.toString(QStringLiteral("yyyy-MM-dd")), r.label, QString::number(r.salesCount),
                      csv.number(Money::formatCents(r.total)), csv.number(Money::formatCents(r.discount)),
                      csv.number(Money::formatCents(r.refunds)),
-                     csv.number(Money::formatCents(r.cost)), csv.number(Money::formatCents(r.profit))});
+                     csv.number(Money::formatCents(r.cost)), csv.number(Money::formatCents(r.profit)),
+                     csv.number(Money::formatCents(r.expenses)), csv.number(Money::formatCents(r.profit - r.expenses))});
     }
     const QString prefix = m_effectiveGroup == ReportGroup::Week ? QStringLiteral("ventas_por_semana")
                            : m_effectiveGroup == ReportGroup::Month ? QStringLiteral("ventas_por_mes")
@@ -214,8 +222,7 @@ QVariantMap ReportController::exportPeriods()
     const QString path = fileName(prefix);
     QString error;
     if (!csv.write(path, {tr("Inicio"), tr("Período"), tr("Ventas"), tr("Total"), tr("Descuentos"), tr("Devoluciones"),
-                          tr("Costo"),
-                          tr("Ganancia")}, rows, &error))
+                          tr("Costo"), tr("Ganancia bruta"), tr("Gastos"), tr("Ganancia neta")}, rows, &error))
         return result(false, error);
     return result(true, QString(), QDir::toNativeSeparators(path));
 }
@@ -252,13 +259,15 @@ QVariantMap ReportController::exportSales()
                      csv.number(Money::formatCents(r.subtotal)), csv.number(Money::formatCents(r.discount)),
                      csv.number(Money::formatCents(r.total)), csv.number(Money::formatCents(r.cost)),
                      csv.number(Money::formatCents(r.total - r.cost)), csv.number(Money::formatCents(r.cash)),
-                     csv.number(Money::formatCents(r.transfer)), csv.number(Money::formatCents(r.refunded)),
+                     csv.number(Money::formatCents(r.transfer)), csv.number(Money::formatCents(r.credit)), r.customerName,
+                     csv.number(Money::formatCents(r.refunded)),
                      r.voided ? tr("Anulada") : (r.refunded > 0 ? tr("Con devolución") : tr("Completada"))});
     }
     const QString path = fileName(QStringLiteral("detalle_ventas"));
     QString error;
     if (!csv.write(path, {tr("Venta"), tr("Fecha"), tr("Cajero"), tr("Subtotal"), tr("Descuento"), tr("Total"),
-                          tr("Costo"), tr("Ganancia"), tr("Efectivo"), tr("Transferencia"), tr("Devuelto"),
+                          tr("Costo"), tr("Ganancia"), tr("Efectivo"), tr("Transferencia"), tr("A crédito"),
+                          tr("Cliente"), tr("Devuelto"),
                           tr("Estado")}, rows, &error))
         return result(false, error);
     return result(true, QString(), QDir::toNativeSeparators(path));

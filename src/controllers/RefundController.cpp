@@ -54,6 +54,8 @@ QVariantMap RefundController::load(int saleId)
     out.insert(QStringLiteral("hasRefunds"), st.refunded > 0);
     out.insert(QStringLiteral("remainingText"), Money::formatCents(qMax<qint64>(0, st.total - st.refunded)));
     out.insert(QStringLiteral("voided"), st.voided());
+    out.insert(QStringLiteral("hasCustomer"), st.customerId > 0);
+    out.insert(QStringLiteral("customerName"), st.customerName);
     out.insert(QStringLiteral("items"), items);
     return out;
 }

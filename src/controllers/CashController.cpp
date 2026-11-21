@@ -64,6 +64,12 @@ void CashController::refresh()
             {QStringLiteral("profitText"), Money::formatCents(sum.profit)},
             {QStringLiteral("refundsCount"), sum.refundsCount},
             {QStringLiteral("refundsText"), Money::formatCents(sum.refundsTotal)},
+            {QStringLiteral("creditSalesText"), Money::formatCents(sum.creditSales)},
+            {QStringLiteral("creditPaymentsText"), Money::formatCents(sum.creditPaymentsCash + sum.creditPaymentsTransfer)},
+            {QStringLiteral("creditPaymentsDetail"), sum.creditPaymentsTransfer > 0
+                 ? tr("efectivo %1 · transf. %2").arg(Money::formatCents(sum.creditPaymentsCash),
+                                                      Money::formatCents(sum.creditPaymentsTransfer))
+                 : QString()},
             {QStringLiteral("expected"), expected},
         };
     }

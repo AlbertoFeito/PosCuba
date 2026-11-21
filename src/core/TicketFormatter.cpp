@@ -119,6 +119,11 @@ QStringList TicketFormatter::format(const SaleDetail &sale, const TicketInfo &in
             out << justify(tr("  equivale a"), Money::formatCents(p.baseCents), columns);
         }
     }
+    if (sale.credit > 0) {
+        out << justify(tr("A crédito:"), Money::formatCents(sale.credit), columns);
+        if (!sale.customerName.isEmpty())
+            out << wrap(tr("Cliente: %1").arg(sale.customerName), columns, 2);
+    }
     if (sale.change > 0)
         out << justify(tr("Vuelto:"), Money::formatCents(sale.change), columns);
     out << rule;
@@ -129,7 +134,9 @@ QStringList TicketFormatter::format(const SaleDetail &sale, const TicketInfo &in
             const QDateTime rd = QDateTime::fromString(r.createdAt, QStringLiteral("yyyy-MM-dd HH:mm:ss"));
             out << justify(tr("Devolución #%1").arg(r.number),
                            rd.isValid() ? rd.toString(QStringLiteral("dd/MM HH:mm")) : r.createdAt, columns);
-            out << justify(r.method == QLatin1String("transfer") ? tr("  por transferencia") : tr("  en efectivo"),
+            out << justify(r.method == QLatin1String("transfer") ? tr("  por transferencia")
+                           : r.method == QLatin1String("credit") ? tr("  a la cuenta")
+                                                                 : tr("  en efectivo"),
                            QStringLiteral("-") + Money::formatCents(r.total), columns);
             if (!r.reason.isEmpty())
                 out << wrap(tr("Motivo: %1").arg(r.reason), columns, 2);

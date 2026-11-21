@@ -43,22 +43,26 @@ Si en una PC vieja la ventana sale en negro, usar `PosCuba (modo compatible).bat
 ## Atajos
 | Pantalla | Teclas |
 |---|---|
-| General | F1 manual · Ctrl+1…9 pantallas · Ctrl+L cerrar sesión · Ctrl+Q salir |
+| General | F1 manual · Ctrl+1…9 pantallas · Ctrl+Shift+C clientes · Ctrl+Shift+G gastos · Ctrl+L cerrar sesión · Ctrl+Q salir |
 | Venta | F2 buscar · `3*código` cantidad · F3 cantidad · `+`/`−` ajustar · Supr quitar línea · F7 descuento · F4 cobrar · F10 ventas recientes (reimprimir, devolver, anular) · F8 abrir caja · Esc cancelar |
-| Cobro | Enter confirmar · F6 cambiar moneda del efectivo · Tab siguiente campo · Esc volver |
+| Cobro | Enter confirmar · F6 cambiar moneda del efectivo · F9 lo que falta a crédito · Tab siguiente campo · Esc volver |
 | Productos | Ctrl+N nuevo · Ctrl+P cambiar precios · Ctrl+I importar/exportar · F2 buscar · Enter/F3 editar · Supr desactivar · Ctrl+S guardar |
 | Inventario | F5 entrada · F6 ajuste |
 | Caja | F8 abrir · F9 cerrar (arqueo) |
+| Clientes | Ctrl+N nuevo · F2 buscar · Enter/F3 editar · F5 abono |
+| Gastos | Ctrl+N nuevo · Supr borrar |
 | Respaldos | Ctrl+B respaldar ahora |
 
-## Funciones de catálogo y devoluciones
+## Funciones de catálogo, devoluciones, fiado y gastos
 - **Devoluciones y anulaciones** (F10 → *Devolver / anular…*): parciales o de toda la venta, en efectivo o por transferencia, con o sin reintegro al inventario. El importe incluye la parte del descuento de la venta; al completar la venta se devuelve exactamente lo que falta. Un cajero necesita el PIN de un administrador. Caja, inventario, reportes y ticket se ajustan solos.
 - **Cambiar precios en lote** (Productos → *Cambiar precios…*): % sobre el precio o costo + % de ganancia, por categoría, con redondeo a 1/5/10/50/100 hacia arriba o al más cercano y vista previa.
+- **Clientes y fiado** (1.3): venta a crédito total o parcial (F9 en el cobro), límite de crédito por cliente, cuenta con saldo, abonos en efectivo o transferencia que entran a la caja, devoluciones a la cuenta, CSV de cuentas por cobrar.
+- **Gastos y ganancia neta** (1.3): gastos por categoría pagados de la caja (crean un retiro) o con otro dinero, gastos fijos mensuales que se registran solos, ganancia neta en Reportes.
 - **Importar / exportar productos** (Productos → *Importar / exportar…*): CSV de Excel (`;` o `,`, UTF-8 o Windows-1252), columnas reconocidas por nombre, revisión fila por fila antes de guardar, todo en una transacción; plantilla incluida.
 
 ## Roles
 - **Administrador**: todo.
-- **Cajero**: Venta y Caja (abrir, cerrar, ingresos y retiros, reimprimir).
+- **Cajero**: Venta, Caja (abrir, cerrar, ingresos y retiros, reimprimir) y Clientes (crear, ver cuentas, abonos; el límite de crédito lo pone el administrador).
 
 Los permisos se comprueban también en el código C++, no solo en la interfaz.
 
@@ -86,9 +90,9 @@ Respaldo automático una vez al día y al cerrar caja; se conservan los últimos
 src/core        dominio y servicios (sin QML)   src/data        SQLite: conexión, migraciones, repositorios
 src/models      modelos de lista para QML        src/controllers objetos expuestos a QML
 src/printing    impresión de tickets             qml/            pantallas, diálogos, tema
-tests/          QtTest (14 suites)               scripts/        build.ps1, deploy.ps1
+tests/          QtTest (16 suites)               scripts/        build.ps1, deploy.ps1
 docs/manual/    manual de usuario (Markdown)     installer/      script de Inno Setup
 ```
 
 ## Tests
-`.\scripts\build.ps1 ... -Test` o `ctest` en la carpeta de compilación. Cubren dinero, productos, inventario, cálculo de venta y vuelto, venta completa y cierre de caja, ticket, impresión a PDF, reportes, usuarios, respaldos, monedas, devoluciones, cambio de precios, importación de productos y el manual (secciones, enlaces, búsqueda y que cada tema de ayuda que pide la interfaz exista).
+`.\scripts\build.ps1 ... -Test` o `ctest` en la carpeta de compilación. Cubren dinero, productos, inventario, cálculo de venta y vuelto, venta completa y cierre de caja, ticket, impresión a PDF, reportes, usuarios, respaldos, monedas, devoluciones, cambio de precios, importación de productos, fiado, gastos y el manual (secciones, enlaces, búsqueda y que cada tema de ayuda que pide la interfaz exista).

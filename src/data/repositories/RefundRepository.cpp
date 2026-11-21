@@ -14,8 +14,9 @@ bool RefundRepository::loadState(int saleId, SaleRefundState *out)
     QSqlQuery q(m_db);
     q.prepare(QStringLiteral(
         "SELECT s.id, s.number, s.created_at, s.status, s.subtotal_cents, s.total_cents, "
-        "(SELECT COALESCE(SUM(total_cents), 0) FROM refunds WHERE sale_id = s.id) "
-        "FROM sales s WHERE s.id = :id"));
+        "(SELECT COALESCE(SUM(total_cents), 0) FROM refunds WHERE sale_id = s.id), "
+        "COALESCE(s.customer_id, 0), COALESCE(c.name, '') "
+        "FROM sales s LEFT JOIN customers c ON c.id = s.customer_id WHERE s.id = :id"));
     q.bindValue(QStringLiteral(":id"), saleId);
     if (!q.exec() || !q.next()) {
         m_lastError = q.lastError().text();
@@ -29,6 +30,8 @@ bool RefundRepository::loadState(int saleId, SaleRefundState *out)
     st.subtotal = q.value(4).toLongLong();
     st.total = q.value(5).toLongLong();
     st.refunded = q.value(6).toLongLong();
+    st.customerId = q.value(7).toInt();
+    st.customerName = q.value(8).toString();
 
     q.prepare(QStringLiteral(
         "SELECT i.id, i.product_id, i.product_name, COALESCE(p.unit, 'u'), i.qty_milli, "
@@ -71,13 +74,16 @@ int RefundRepository::insertRefund(int number, const RefundRequest &req, int ses
     QSqlQuery q(m_db);
     q.prepare(QStringLiteral(
         "INSERT INTO refunds (number, sale_id, session_id, user_id, authorized_by, method, reason, restock, "
-        "total_cents, cost_cents) VALUES (:n, :s, :ss, :u, :a, :m, :r, :rs, :t, :c)"));
+        "total_cents, cost_cents, to_account) VALUES (:n, :s, :ss, :u, :a, :m, :r, :rs, :t, :c, :ta)"));
     q.bindValue(QStringLiteral(":n"), number);
     q.bindValue(QStringLiteral(":s"), req.saleId);
     q.bindValue(QStringLiteral(":ss"), sessionId);
     q.bindValue(QStringLiteral(":u"), req.userId);
     q.bindValue(QStringLiteral(":a"), req.authorizedBy);
-    q.bindValue(QStringLiteral(":m"), req.method);
+    // A la cuenta del cliente: no mueve dinero (method queda 'cash' solo por la restriccion de la tabla).
+    const bool toAccount = req.method == PaymentMethod::credit();
+    q.bindValue(QStringLiteral(":m"), toAccount ? PaymentMethod::cash() : req.method);
+    q.bindValue(QStringLiteral(":ta"), toAccount ? 1 : 0);
     q.bindValue(QStringLiteral(":r"), req.reason.trimmed());
     q.bindValue(QStringLiteral(":rs"), req.restock ? 1 : 0);
     q.bindValue(QStringLiteral(":t"), total);
@@ -127,7 +133,8 @@ QVector<RefundInfo> RefundRepository::forSale(int saleId)
     QVector<RefundInfo> out;
     QSqlQuery q(m_db);
     q.prepare(QStringLiteral(
-        "SELECT r.number, r.created_at, u.name, r.method, r.reason, r.total_cents "
+        "SELECT r.number, r.created_at, u.name, CASE WHEN r.to_account = 1 THEN 'credit' ELSE r.method END, "
+        "r.reason, r.total_cents "
         "FROM refunds r LEFT JOIN users u ON u.id = r.user_id WHERE r.sale_id = :s ORDER BY r.id"));
     q.bindValue(QStringLiteral(":s"), saleId);
     if (q.exec()) {
@@ -151,8 +158,9 @@ RefundTotals RefundRepository::sessionTotals(int sessionId)
     QSqlQuery q(m_db);
     q.prepare(QStringLiteral(
         "SELECT COUNT(*), COALESCE(SUM(total_cents), 0), COALESCE(SUM(cost_cents), 0), "
-        "COALESCE(SUM(CASE WHEN method = 'cash' THEN total_cents END), 0), "
-        "COALESCE(SUM(CASE WHEN method = 'transfer' THEN total_cents END), 0) "
+        "COALESCE(SUM(CASE WHEN to_account = 0 AND method = 'cash' THEN total_cents END), 0), "
+        "COALESCE(SUM(CASE WHEN to_account = 0 AND method = 'transfer' THEN total_cents END), 0), "
+        "COALESCE(SUM(CASE WHEN to_account = 1 THEN total_cents END), 0) "
         "FROM refunds WHERE session_id = :s"));
     q.bindValue(QStringLiteral(":s"), sessionId);
     if (q.exec() && q.next()) {
@@ -161,6 +169,7 @@ RefundTotals RefundRepository::sessionTotals(int sessionId)
         t.cost = q.value(2).toLongLong();
         t.cash = q.value(3).toLongLong();
         t.transfer = q.value(4).toLongLong();
+        t.account = q.value(5).toLongLong();
     }
     return t;
 }

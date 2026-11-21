@@ -42,14 +42,15 @@ Después, en este orden:
 
 1. El cajero entra con su PIN.
 2. **Abre la caja** con el dinero que hay en la gaveta para dar vuelto (F8). Ver [Caja](ayuda:caja).
-3. **Vende** (Ctrl+1): escanea o escribe el código, cobra con F4. Ver [Vender](ayuda:venta) y [Cobrar](ayuda:cobro).
+3. **Vende** (Ctrl+1): escanea o escribe el código, cobra con F4. Ver [Vender](ayuda:venta) y [Cobrar](ayuda:cobro). Si el cliente se lleva fiado, F9 en el cobro: ver [Clientes y fiado](ayuda:clientes).
 4. Si sale o entra dinero que no es una venta (pago a un proveedor, cambio adicional), regístralo en **Caja** como retiro o ingreso.
 5. Al terminar, **cierra la caja** (F9): cuenta el dinero y el programa te dice si sobra o falta.
 6. Cuando llega mercancía, el administrador registra la **entrada** en Inventario.
+7. El administrador anota los **gastos** del negocio (alquiler, electricidad…) en Gastos para ver la **ganancia neta** en Reportes. Ver [Gastos](ayuda:gastos).
 
 ## La pantalla
 
-- **Barra izquierda**: las pantallas del programa. Cada una tiene su atajo (Ctrl+1 a Ctrl+9). El cajero solo ve *Venta* y *Caja*.
+- **Barra izquierda**: las pantallas del programa. Cada una tiene su atajo (Ctrl+1 a Ctrl+9; Clientes Ctrl+Shift+C y Gastos Ctrl+Shift+G). El cajero solo ve *Venta*, *Caja* y *Clientes*.
 - **Abajo a la izquierda**: tu nombre y rol, *Cambiar mi PIN*, *Cerrar sesión*, *Ayuda* y el tema oscuro.
 - **Mensajes**: los avisos aparecen abajo unos segundos; en verde si todo salió bien, en rojo si hubo un problema.
 

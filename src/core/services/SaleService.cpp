@@ -24,11 +24,12 @@ SaleService::SaleService(QSqlDatabase db)
     , m_cash(db)
     , m_currencies(db)
     , m_inventory(db)
+    , m_customers(db)
 {
 }
 
 CheckoutResult SaleService::checkout(const QVector<CartLine> &lines, qint64 discountCents,
-                                     QVector<Payment> payments, int userId, bool allowNegativeStock)
+                                     QVector<Payment> payments, int userId, bool allowNegativeStock, int customerId)
 {
     const QString cartError = SaleCalculator::validateCart(lines, discountCents);
     if (!cartError.isEmpty())
@@ -41,6 +42,11 @@ CheckoutResult SaleService::checkout(const QVector<CartLine> &lines, qint64 disc
     for (Payment p : payments) {
         if (p.amountCents == 0)
             continue;
+        if (p.method == PaymentMethod::credit()) {
+            p.rateMilli = 1000;   // siempre en moneda base
+            effective.append(p);
+            continue;
+        }
         Currency c;
         if (!m_currencies.get(p.currency, &c) || !c.active)
             return fail(tr("Moneda no disponible: %1.").arg(p.currency));
@@ -60,6 +66,10 @@ CheckoutResult SaleService::checkout(const QVector<CartLine> &lines, qint64 disc
     CashSession session;
     if (!m_cash.current(&session))
         return fail(tr("No hay caja abierta. Abre la caja antes de vender."));
+
+    QString creditError;
+    if (totals.creditPaid > 0 && !m_customers.canCharge(customerId, totals.creditPaid, &creditError))
+        return fail(creditError);
 
     // Cantidad total por producto (un producto puede aparecer en varias lineas).
     QMap<int, qint64> qtyByProduct;
@@ -97,7 +107,15 @@ CheckoutResult SaleService::checkout(const QVector<CartLine> &lines, qint64 disc
         if (!m_sales.insertItem(saleId, l, SaleCalculator::lineTotal(l)))
             return fail(tr("No se pudo guardar la venta: %1").arg(m_sales.lastError()));
     }
+    if (totals.creditPaid > 0) {
+        if (!m_sales.setCredit(saleId, customerId, totals.creditPaid)
+            || !m_customers.customers().insertEntry(customerId, CustomerEntryKind::charge(), totals.creditPaid, saleId,
+                                                    0, session.id, QString(), tr("Venta #%1").arg(number), userId))
+            return fail(tr("No se pudo guardar el crédito: %1").arg(m_sales.lastError()));
+    }
     for (const Payment &p : effective) {
+        if (p.method == PaymentMethod::credit())
+            continue;
         if (!m_sales.insertPayment(saleId, p, SaleCalculator::toBase(p.amountCents, p.rateMilli)))
             return fail(tr("No se pudo guardar el pago: %1").arg(m_sales.lastError()));
     }

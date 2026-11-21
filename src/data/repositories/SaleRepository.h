@@ -15,6 +15,7 @@ public:
 
     int nextNumber();
     int insertSale(int number, int sessionId, int userId, const SaleTotals &t); // id o -1
+    bool setCredit(int saleId, int customerId, qint64 creditCents);
     bool insertItem(int saleId, const CartLine &line, qint64 lineTotal);
     bool insertPayment(int saleId, const Payment &p, qint64 baseCents);
 

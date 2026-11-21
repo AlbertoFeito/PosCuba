@@ -11,14 +11,18 @@ La pantalla **Reportes** (Ctrl+5, solo administrador) resume las ventas de un pe
 
 | Recuadro | Qué es |
 |---|---|
-| Ventas | Cantidad de ventas |
+| Ventas | Cantidad de ventas; debajo, el ticket promedio (total vendido ÷ ventas) |
 | Total vendido | Suma de los totales, menos lo devuelto a clientes en el período (debajo, los descuentos y las devoluciones) |
-| Ganancia | Total vendido menos el costo de lo vendido; debajo, el margen en % |
-| Ticket promedio | Total vendido ÷ cantidad de ventas |
+| Ganancia bruta | Total vendido menos el costo de lo vendido; debajo, el margen en % |
+| Gastos | Gastos del negocio con fecha en el período (ver [Gastos](ayuda:gastos)) |
+| Ganancia neta | Ganancia bruta − gastos. En rojo si es negativa: el negocio perdió dinero en el período |
 | Efectivo | Cobrado en efectivo, convertido a la moneda base y sin el vuelto |
 | Transferencias | Cobrado por transferencia |
+| A crédito | Vendido fiado en el período; debajo, los abonos que pagaron los clientes (ver [Clientes y fiado](ayuda:clientes)) |
 
 Las **devoluciones** se restan en la fecha en que se hicieron, no en la de la venta. Una venta anulada no cuenta en *Ventas*. Ver [Devoluciones y anulaciones](ayuda:devoluciones).
+
+La venta a crédito cuenta en el total y en la ganancia **el día que se vende**, aunque se cobre después. Los abonos no son ventas nuevas: no suman al total.
 
 La **ganancia** usa el costo que tenía cada producto **en el momento de la venta**. Si un producto no tiene costo, toda su venta cuenta como ganancia: carga los costos para que este número sea real.
 
@@ -28,7 +32,7 @@ El gráfico de barras muestra el total por **Día**, **Semana** o **Mes** (boton
 
 En rangos largos el programa agrupa solo: por semana si son más de 2 meses y por mes si son más de 2 años. Lo indica arriba del gráfico.
 
-Debajo, la tabla con los mismos datos. Los períodos sin ventas aparecen atenuados.
+Debajo, la tabla con los mismos datos y la columna **Gastos** de cada período. Los períodos sin ventas aparecen atenuados.
 
 ## Productos más vendidos
 

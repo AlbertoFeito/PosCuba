@@ -7,6 +7,7 @@
 #include "core/services/CashService.h"
 #include "core/services/InventoryService.h"
 #include "data/repositories/CashRepository.h"
+#include "data/repositories/CustomerRepository.h"
 #include "data/repositories/RefundRepository.h"
 
 // Devoluciones parciales y anulaciones de ventas.
@@ -35,4 +36,5 @@ private:
     CashRepository m_cashRepo;
     CashService m_cash;
     InventoryService m_inventory;
+    CustomerRepository m_customers;
 };

@@ -18,6 +18,7 @@ struct PeriodRow
     qint64 profit = 0;
     qint64 discount = 0;
     qint64 refunds = 0;   // devuelto en el periodo (ya restado de total)
+    qint64 expenses = 0;  // gastos del periodo
 };
 
 struct ProductRow
@@ -41,6 +42,10 @@ struct ReportSummary
     qint64 cash = 0;        // efectivo neto (recibido menos vuelto), moneda base
     qint64 transfer = 0;
     qint64 refunds = 0;     // devuelto en el periodo (ya restado de total, efectivo y transferencia)
+    qint64 credit = 0;      // vendido a credito (fiado) en el periodo, menos lo devuelto a cuentas
+    qint64 creditPayments = 0;  // abonos de clientes cobrados en el periodo
+    qint64 expenses = 0;    // gastos del periodo
+    qint64 netProfit = 0;   // ganancia - gastos
     int refundsCount = 0;
     qint64 averageTicket = 0;
     int marginPercent = 0;  // ganancia / total
@@ -58,5 +63,7 @@ struct SaleReportRow
     qint64 cash = 0;
     qint64 transfer = 0;
     qint64 refunded = 0;  // devuelto de esta venta (en cualquier fecha)
+    qint64 credit = 0;    // a credito (fiado)
+    QString customerName;
     bool voided = false;
 };

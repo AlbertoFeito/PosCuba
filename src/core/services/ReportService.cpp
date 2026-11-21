@@ -95,8 +95,9 @@ ReportSummary ReportService::summary(const QDate &from, const QDate &to)
     s.cash -= change;
 
     q.prepare(QStringLiteral("SELECT COUNT(*), COALESCE(SUM(total_cents), 0), COALESCE(SUM(cost_cents), 0), "
-                             "COALESCE(SUM(CASE WHEN method = 'cash' THEN total_cents END), 0), "
-                             "COALESCE(SUM(CASE WHEN method = 'transfer' THEN total_cents END), 0) "
+                             "COALESCE(SUM(CASE WHEN to_account = 0 AND method = 'cash' THEN total_cents END), 0), "
+                             "COALESCE(SUM(CASE WHEN to_account = 0 AND method = 'transfer' THEN total_cents END), 0), "
+                             "COALESCE(SUM(CASE WHEN to_account = 1 THEN total_cents END), 0) "
                              "FROM refunds WHERE created_at >= :from AND created_at < :to"));
     bindRange(q, from, to);
     if (q.exec() && q.next()) {
@@ -106,9 +107,31 @@ ReportSummary ReportService::summary(const QDate &from, const QDate &to)
         s.cost -= q.value(2).toLongLong();
         s.cash -= q.value(3).toLongLong();
         s.transfer -= q.value(4).toLongLong();
+        s.credit -= q.value(5).toLongLong();
     }
 
+    // Fiado: vendido a credito y abonos cobrados en el periodo
+    q.prepare(QStringLiteral("SELECT COALESCE(SUM(credit_cents), 0) FROM sales "
+                             "WHERE created_at >= :from AND created_at < :to"));
+    bindRange(q, from, to);
+    if (q.exec() && q.next())
+        s.credit += q.value(0).toLongLong();
+    q.prepare(QStringLiteral("SELECT COALESCE(SUM(amount_cents), 0) FROM customer_entries "
+                             "WHERE kind = 'payment' AND created_at >= :from AND created_at < :to"));
+    bindRange(q, from, to);
+    if (q.exec() && q.next())
+        s.creditPayments = q.value(0).toLongLong();
+
     s.profit = s.total - s.cost;
+
+    // Gastos por su fecha (expense_date = 'yyyy-MM-dd')
+    q.prepare(QStringLiteral("SELECT COALESCE(SUM(amount_cents), 0) FROM expenses "
+                             "WHERE expense_date >= :from AND expense_date <= :to"));
+    q.bindValue(QStringLiteral(":from"), from.toString(QStringLiteral("yyyy-MM-dd")));
+    q.bindValue(QStringLiteral(":to"), to.toString(QStringLiteral("yyyy-MM-dd")));
+    if (q.exec() && q.next())
+        s.expenses = q.value(0).toLongLong();
+    s.netProfit = s.profit - s.expenses;
     s.averageTicket = s.salesCount > 0 ? (s.total + s.salesCount / 2) / s.salesCount : 0;
     s.marginPercent = s.total > 0 ? int((s.profit * 100 + s.total / 2) / s.total) : 0;
     return s;
@@ -160,6 +183,19 @@ QVector<PeriodRow> ReportService::byPeriod(const QDate &from, const QDate &to, R
             r.refunds += q.value(1).toLongLong();
             r.total -= q.value(1).toLongLong();
             r.cost -= q.value(2).toLongLong();
+        }
+    }
+
+    // Gastos del periodo
+    q.prepare(QStringLiteral("SELECT expense_date, SUM(amount_cents) FROM expenses "
+                             "WHERE expense_date >= :from AND expense_date <= :to GROUP BY expense_date"));
+    q.bindValue(QStringLiteral(":from"), from.toString(QStringLiteral("yyyy-MM-dd")));
+    q.bindValue(QStringLiteral(":to"), to.toString(QStringLiteral("yyyy-MM-dd")));
+    if (q.exec()) {
+        while (q.next()) {
+            const QDate day = QDate::fromString(q.value(0).toString(), QStringLiteral("yyyy-MM-dd"));
+            if (day.isValid())
+                rows[periodStart(day, group)].expenses += q.value(1).toLongLong();
         }
     }
 
@@ -244,8 +280,9 @@ QVector<SaleReportRow> ReportService::sales(const QDate &from, const QDate &to)
         "SELECT s.number, s.created_at, u.name, s.subtotal_cents, s.discount_cents, s.total_cents, %1, "
         "(SELECT COALESCE(SUM(base_cents), 0) FROM payments WHERE sale_id = s.id AND method = 'cash') - s.change_cents, "
         "(SELECT COALESCE(SUM(base_cents), 0) FROM payments WHERE sale_id = s.id AND method = 'transfer'), "
-        "(SELECT COALESCE(SUM(total_cents), 0) FROM refunds WHERE sale_id = s.id), s.status "
-        "FROM sales s LEFT JOIN users u ON u.id = s.user_id "
+        "(SELECT COALESCE(SUM(total_cents), 0) FROM refunds WHERE sale_id = s.id), s.status, s.credit_cents, "
+        "COALESCE(c.name, '') "
+        "FROM sales s LEFT JOIN users u ON u.id = s.user_id LEFT JOIN customers c ON c.id = s.customer_id "
         "WHERE s.created_at >= :from AND s.created_at < :to ORDER BY s.id")
                   .arg(QString::fromLatin1(kSaleCost)));
     bindRange(q, from, to);
@@ -263,6 +300,8 @@ QVector<SaleReportRow> ReportService::sales(const QDate &from, const QDate &to)
             r.transfer = q.value(8).toLongLong();
             r.refunded = q.value(9).toLongLong();
             r.voided = q.value(10).toString() == QLatin1String("voided");
+            r.credit = q.value(11).toLongLong();
+            r.customerName = q.value(12).toString();
             out.append(r);
         }
     }

@@ -16,6 +16,8 @@ El programa está pensado para usarse con el teclado y el lector de barras. Los 
 | Ctrl+7 | Usuarios |
 | Ctrl+8 | Respaldos |
 | Ctrl+9 | Estado |
+| Ctrl+Shift+C | Clientes |
+| Ctrl+Shift+G | Gastos |
 | Ctrl+L | Cerrar sesión |
 | Ctrl+Q | Salir del programa |
 
@@ -43,6 +45,7 @@ El programa está pensado para usarse con el teclado y el lector de barras. Los 
 |---|---|
 | Enter o Ctrl+S | Confirmar la venta |
 | F6 | Cambiar la moneda del efectivo |
+| F9 | Dejar lo que falta a crédito (fiado) |
 | Tab | Siguiente campo |
 | Esc | Volver al carrito |
 
@@ -81,6 +84,23 @@ El programa está pensado para usarse con el teclado y el lector de barras. Los 
 |---|---|
 | F8 | Abrir caja |
 | F9 | Cerrar caja (arqueo) |
+
+## Clientes
+
+| Tecla | Acción |
+|---|---|
+| F2 | Buscar |
+| Ctrl+N | Nuevo cliente |
+| Enter o F3 | Editar el elegido |
+| F5 | Registrar un abono |
+
+## Gastos
+
+| Tecla | Acción |
+|---|---|
+| Ctrl+N | Nuevo gasto |
+| Supr | Borrar el gasto elegido |
+| Ctrl+S | Guardar (en la ventana del gasto) |
 
 ## Otras pantallas
 

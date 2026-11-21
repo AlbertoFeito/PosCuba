@@ -4,11 +4,12 @@ La ventana **Cobrar** se abre con **F4** desde la venta. Arriba está el **total
 
 ## Formas de pago
 
-Se puede cobrar de tres maneras:
+Se puede cobrar de cuatro maneras:
 
 - **Efectivo**: escribe lo que entrega el cliente.
 - **Transferencia**: escribe el importe transferido y, si quieres, el número de transacción (sale en el ticket y en los reportes).
 - **Mixto**: una parte en transferencia y el resto en efectivo. Escribe los dos importes.
+- **A crédito (fiado)**: lo que falta queda como deuda de un cliente. Ver abajo.
 
 Debajo se calcula al momento:
 
@@ -16,6 +17,18 @@ Debajo se calcula al momento:
 - **Vuelto** (en verde): lo que hay que devolver al cliente.
 
 La transferencia no puede ser mayor que el total: el vuelto siempre sale del efectivo.
+
+## Vender a crédito (fiado) — F9
+
+Cuando el cliente se lleva la mercancía y paga después, todo o en parte:
+
+1. Escribe lo que paga ahora en efectivo o transferencia (puede ser 0).
+2. Pulsa **F9** (o marca **Lo que falta**). Se muestra **A crédito:** con el importe que queda debiendo.
+3. Elige el cliente en la lista (escribe las primeras letras para buscarlo). Si es nuevo, pulsa **+**, escribe su nombre y teléfono y **Ctrl+S**: queda elegido.
+4. Debajo se ve cuánto debe ya y su límite de crédito.
+5. **Enter** confirma.
+
+La parte fiada **no entra a la gaveta**: no se suma al efectivo esperado de la caja. Aparece en el recuadro **A crédito (fiado)** de [Caja](ayuda:caja) y en la cuenta del cliente en [Clientes](ayuda:clientes). Si el cliente tiene límite y esta venta lo pasaría, el programa no deja confirmar.
 
 ## Botones de importe rápido
 
@@ -55,4 +68,6 @@ Si algún producto quedaría con stock negativo, aparece una advertencia con la 
 | Falta por pagar … | Aumenta el efectivo o la transferencia |
 | La transferencia no puede superar el total | Baja la transferencia; el vuelto sale del efectivo |
 | No hay caja abierta | Abre la caja (F8) |
+| Elige el cliente que se lleva la mercancía a crédito | Con F9 marcado hay que elegir un cliente en la lista |
+| Supera el límite de crédito … | Cobra más ahora, o pide al administrador que suba el límite en Clientes |
 | Venta guardada, pero no se generó el ticket | La venta está bien; revisa la impresora o que el PDF del día no esté abierto. Reimprime con F10 |

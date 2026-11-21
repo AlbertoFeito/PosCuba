@@ -17,7 +17,12 @@
         <file>qml/screens/ChangePinDialog.qml</file>
         <file>qml/screens/CloseCashDialog.qml</file>
         <file>qml/screens/CurrenciesPanel.qml</file>
+        <file>qml/screens/CustomerDialog.qml</file>
+        <file>qml/screens/CustomerPaymentDialog.qml</file>
+        <file>qml/screens/CustomersScreen.qml</file>
         <file>qml/screens/DiscountDialog.qml</file>
+        <file>qml/screens/ExpenseDialog.qml</file>
+        <file>qml/screens/ExpensesScreen.qml</file>
         <file>qml/screens/HelpDialog.qml</file>
         <file>qml/screens/ImportDialog.qml</file>
         <file>qml/screens/InventoryScreen.qml</file>
@@ -27,6 +32,7 @@
         <file>qml/screens/PurchaseDialog.qml</file>
         <file>qml/screens/QuantityDialog.qml</file>
         <file>qml/screens/RecentSalesDialog.qml</file>
+        <file>qml/screens/RecurringDialog.qml</file>
         <file>qml/screens/RefundDialog.qml</file>
         <file>qml/screens/ReportsScreen.qml</file>
         <file>qml/screens/SaleScreen.qml</file>

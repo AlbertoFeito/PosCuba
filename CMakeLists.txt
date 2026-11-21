@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(PosCuba VERSION 1.2.0 LANGUAGES CXX)
+project(PosCuba VERSION 1.3.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -32,6 +32,8 @@ add_library(poscore OBJECT
     src/core/ProductValidator.cpp
     src/core/ProductValidator.h
     src/core/Currency.h
+    src/core/Customer.h
+    src/core/Expense.h
     src/core/CsvWriter.cpp
     src/core/CsvWriter.h
     src/core/CsvReader.cpp
@@ -53,6 +55,10 @@ add_library(poscore OBJECT
     src/core/services/CashService.h
     src/core/services/CurrencyService.cpp
     src/core/services/CurrencyService.h
+    src/core/services/CustomerService.cpp
+    src/core/services/CustomerService.h
+    src/core/services/ExpenseService.cpp
+    src/core/services/ExpenseService.h
     src/core/services/InventoryService.cpp
     src/core/services/InventoryService.h
     src/core/services/PricingService.cpp
@@ -79,6 +85,10 @@ add_library(poscore OBJECT
     src/data/repositories/CategoryRepository.h
     src/data/repositories/CurrencyRepository.cpp
     src/data/repositories/CurrencyRepository.h
+    src/data/repositories/CustomerRepository.cpp
+    src/data/repositories/CustomerRepository.h
+    src/data/repositories/ExpenseRepository.cpp
+    src/data/repositories/ExpenseRepository.h
     src/data/repositories/ProductRepository.cpp
     src/data/repositories/ProductRepository.h
     src/data/Transaction.h
@@ -123,6 +133,10 @@ add_executable(pos
     src/controllers/CatalogController.cpp
     src/controllers/CatalogController.h
     src/controllers/CurrencyController.cpp
+    src/controllers/CustomerController.cpp
+    src/controllers/CustomerController.h
+    src/controllers/ExpenseController.cpp
+    src/controllers/ExpenseController.h
     src/controllers/CurrencyController.h
     src/controllers/HelpController.cpp
     src/controllers/HelpController.h
@@ -176,7 +190,7 @@ endforeach()
 # ---- Tests ----
 if(POS_BUILD_TESTS)
     enable_testing()
-    foreach(name tst_money tst_productservice tst_inventory tst_salecalculator tst_sale tst_ticket tst_reports tst_users tst_backup tst_currency tst_help tst_refund tst_catalog)
+    foreach(name tst_money tst_productservice tst_inventory tst_salecalculator tst_sale tst_ticket tst_reports tst_users tst_backup tst_currency tst_help tst_refund tst_catalog tst_credit tst_expenses)
         add_executable(${name} tests/${name}.cpp)
         target_link_libraries(${name} PRIVATE poscore Qt${QT_VERSION_MAJOR}::Test)
         if(MSVC)

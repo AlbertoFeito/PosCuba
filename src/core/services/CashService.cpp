@@ -96,6 +96,14 @@ CashSummary CashService::summary(const CashSession &session)
     s.cashSales -= rf.cash;
     s.transferSales -= rf.transfer;
     s.expected[0].expectedCents -= rf.cash;
+
+    // Fiado: lo vendido a credito no entra a la gaveta; los abonos en efectivo si.
+    qint64 creditSold = 0, payCash = 0, payTransfer = 0;
+    m_cash.creditStats(session.id, &creditSold, &payCash, &payTransfer);
+    s.creditSales = creditSold - rf.account;
+    s.creditPaymentsCash = payCash;
+    s.creditPaymentsTransfer = payTransfer;
+    s.expected[0].expectedCents += payCash;
     return s;
 }
 

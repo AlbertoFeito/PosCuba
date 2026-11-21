@@ -34,6 +34,9 @@ public:
     bool insertCount(int sessionId, const CurrencyAmount &c);
     QVector<CurrencyAmount> counts(int sessionId);
     int insertMovement(int sessionId, int userId, qint64 amountCents, const QString &reason);
+    bool deleteMovement(int movementId);
+    // Fiado en la caja: vendido a credito y abonos recibidos (efectivo / transferencia).
+    void creditStats(int sessionId, qint64 *creditSold, qint64 *paymentsCash, qint64 *paymentsTransfer);
     QVector<CashSession> recent(int limit);
 
     SalesStats salesStats(int sessionId);

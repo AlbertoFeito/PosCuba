@@ -77,12 +77,27 @@ bool SaleRepository::insertPayment(int saleId, const Payment &p, qint64 baseCent
     return true;
 }
 
+bool SaleRepository::setCredit(int saleId, int customerId, qint64 creditCents)
+{
+    QSqlQuery q(m_db);
+    q.prepare(QStringLiteral("UPDATE sales SET customer_id = :c, credit_cents = :cr WHERE id = :id"));
+    q.bindValue(QStringLiteral(":c"), customerId);
+    q.bindValue(QStringLiteral(":cr"), creditCents);
+    q.bindValue(QStringLiteral(":id"), saleId);
+    if (!q.exec()) {
+        m_lastError = q.lastError().text();
+        return false;
+    }
+    return true;
+}
+
 bool SaleRepository::load(int saleId, SaleDetail *out)
 {
     QSqlQuery q(m_db);
     q.prepare(QStringLiteral(
         "SELECT s.id, s.number, s.created_at, u.name, s.status, s.subtotal_cents, s.discount_cents, "
-        "s.total_cents, s.change_cents FROM sales s LEFT JOIN users u ON u.id = s.user_id WHERE s.id = :id"));
+        "s.total_cents, s.change_cents, s.credit_cents, COALESCE(c.name, '') FROM sales s "
+        "LEFT JOIN users u ON u.id = s.user_id LEFT JOIN customers c ON c.id = s.customer_id WHERE s.id = :id"));
     q.bindValue(QStringLiteral(":id"), saleId);
     if (!q.exec() || !q.next()) {
         m_lastError = q.lastError().text();
@@ -98,6 +113,8 @@ bool SaleRepository::load(int saleId, SaleDetail *out)
     d.discount = q.value(6).toLongLong();
     d.total = q.value(7).toLongLong();
     d.change = q.value(8).toLongLong();
+    d.credit = q.value(9).toLongLong();
+    d.customerName = q.value(10).toString();
 
     q.prepare(QStringLiteral(
         "SELECT i.product_name, p.unit, i.qty_milli, i.price_cents, i.line_total_cents "
@@ -130,7 +147,8 @@ bool SaleRepository::load(int saleId, SaleDetail *out)
         }
     }
 
-    q.prepare(QStringLiteral("SELECT r.number, r.created_at, u.name, r.method, r.reason, r.total_cents "
+    q.prepare(QStringLiteral("SELECT r.number, r.created_at, u.name, CASE WHEN r.to_account = 1 THEN 'credit' ELSE r.method END, "
+        "r.reason, r.total_cents "
                              "FROM refunds r LEFT JOIN users u ON u.id = r.user_id WHERE r.sale_id = :id ORDER BY r.id"));
     q.bindValue(QStringLiteral(":id"), saleId);
     if (q.exec()) {

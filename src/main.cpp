@@ -14,6 +14,8 @@
 #include "controllers/CashController.h"
 #include "controllers/CatalogController.h"
 #include "controllers/CurrencyController.h"
+#include "controllers/CustomerController.h"
+#include "controllers/ExpenseController.h"
 #include "controllers/HelpController.h"
 #include "controllers/InventoryController.h"
 #include "controllers/ProductController.h"
@@ -68,12 +70,22 @@ int main(int argc, char *argv[])
         productController.reload();
         inventoryController.reload();
     });
+    CustomerController customerController(Database::connection(), controller.session());
+    ExpenseController expenseController(Database::connection(), controller.session());
+    expenseController.reload();   // registra los gastos fijos que tocan
+    QObject::connect(&backupController, &BackupController::dataRestored, &customerController, &CustomerController::reload);
+    QObject::connect(&backupController, &BackupController::dataRestored, &expenseController, &ExpenseController::reload);
+    QObject::connect(&customerController, &CustomerController::paymentRegistered, &cashController, &CashController::refresh);
+    QObject::connect(&saleController, &SaleController::creditSale, &customerController, &CustomerController::reload);
+    QObject::connect(&expenseController, &ExpenseController::cashChanged, &cashController, &CashController::refresh);
+    QObject::connect(&expenseController, &ExpenseController::expensesChanged, &reportController, &ReportController::refresh);
     RefundController refundController(Database::connection(), controller.session(), controller.userService());
     QObject::connect(&refundController, &RefundController::refunded, &app, [&]() {
         cashController.refresh();
         inventoryController.reload();
         productController.reload();
         reportController.refresh();
+        customerController.reload();
     });
     QObject::connect(&currencyController, &CurrencyController::currenciesEdited, &app, [&]() {
         saleController.refreshCurrencies();
@@ -136,6 +148,8 @@ int main(int argc, char *argv[])
     ctx->setContextProperty(QStringLiteral("help"), &helpController);
     ctx->setContextProperty(QStringLiteral("refundCtrl"), &refundController);
     ctx->setContextProperty(QStringLiteral("catalogCtrl"), &catalogController);
+    ctx->setContextProperty(QStringLiteral("customerCtrl"), &customerController);
+    ctx->setContextProperty(QStringLiteral("expenseCtrl"), &expenseController);
     engine.load(QUrl(QStringLiteral("qrc:/qml/main.qml")));
     if (engine.rootObjects().isEmpty())
         return -1;

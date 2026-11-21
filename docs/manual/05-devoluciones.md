@@ -10,7 +10,7 @@ Cuando un cliente devuelve productos, o una venta se registró mal, no se borra 
 1. En **Venta**, pulsa **F10** (Ventas recientes) y elige la venta.
 2. Pulsa **Devolver / anular…** (o **Supr**).
 3. Escribe en **A devolver** la cantidad de cada producto que se devuelve. Vacío o 0 = ese producto no se devuelve. Para devolverlo todo, marca **Devolver todo y anular la venta**.
-4. Elige cómo se devuelve el dinero: **En efectivo** o **Por transferencia**.
+4. Elige cómo se devuelve el dinero: **En efectivo**, **Por transferencia** o, si la venta fue a crédito, **A la cuenta de …** (se rebaja la deuda del cliente; es lo que viene marcado en ese caso).
 5. Escribe el **motivo** (obligatorio): producto defectuoso, error al cobrar, el cliente se arrepintió…
 6. Deja marcado **Reintegrar los productos al inventario** si se pueden volver a vender. Desmárcalo si están rotos o vencidos.
 7. Si eres **cajero**, elige un administrador en **Autoriza** y que escriba su PIN.
@@ -36,6 +36,8 @@ Abajo se ve **A devolver** antes de confirmar. Se calcula así:
 | Reportes | Lo devuelto se resta en la fecha de la devolución. Una venta anulada no cuenta como venta |
 | Ticket | El ticket de la venta muestra cada devolución y el **NETO**. Con salida PDF, el PDF del día de esa venta se actualiza solo |
 | Ventas recientes | La venta muestra *devuelto …* en amarillo, o *ANULADA* en rojo |
+
+Una devolución **a la cuenta** del cliente no mueve dinero de la caja: solo baja lo que debe y queda en su cuenta como *Devolución*.
 
 Una devolución en **efectivo** necesita que haya ese dinero en la gaveta. Si no alcanza, devuelve por transferencia o registra antes un **ingreso** en [Caja](ayuda:caja).
 

@@ -23,7 +23,10 @@ Dialog {
         sale = refundCtrl.load(saleId)
         qtys = {}
         allCheck.checked = false
-        cashRadio.checked = true
+        if (sale.hasCustomer)
+            accountRadio.checked = true
+        else
+            cashRadio.checked = true
         reasonField.text = ""
         restockCheck.checked = true
         adminPin.text = ""
@@ -54,7 +57,7 @@ Dialog {
             "saleId": sale.saleId,
             "qtys": qtys,
             "all": allCheck.checked,
-            "method": transferRadio.checked ? "transfer" : "cash",
+            "method": accountRadio.checked && dlg.sale.hasCustomer ? "credit" : transferRadio.checked ? "transfer" : "cash",
             "reason": reasonField.text,
             "restock": restockCheck.checked,
             "adminId": adminList.length > 0 && adminCombo.currentIndex >= 0 ? adminList[adminCombo.currentIndex].id : 0,
@@ -66,11 +69,13 @@ Dialog {
             errorText = r.error
             return
         }
+        var how = r.method === "credit" ? qsTr("rebajado de la deuda del cliente")
+                  : r.method === "transfer" ? qsTr("por transferencia") : qsTr("en efectivo")
         doneText = r.voided
-                ? qsTr("Venta #%1 anulada. Devolver %2 %3.").arg(sale.number).arg(r.totalText)
-                      .arg(r.method === "transfer" ? qsTr("por transferencia") : qsTr("en efectivo"))
-                : qsTr("Devolución #%1: devolver %2 %3.").arg(r.number).arg(r.totalText)
-                      .arg(r.method === "transfer" ? qsTr("por transferencia") : qsTr("en efectivo"))
+                ? (r.method === "credit" ? qsTr("Venta #%1 anulada: %2 %3.") : qsTr("Venta #%1 anulada. Devolver %2 %3."))
+                      .arg(sale.number).arg(r.totalText).arg(how)
+                : (r.method === "credit" ? qsTr("Devolución #%1: %2 %3.") : qsTr("Devolución #%1: devolver %2 %3."))
+                      .arg(r.number).arg(r.totalText).arg(how)
         close()
         done()
     }
@@ -222,6 +227,12 @@ Dialog {
                     text: qsTr("En efectivo")
                     checked: true
                     HelpTip { text: qsTr("El dinero sale de la gaveta (moneda base). Se descuenta del efectivo esperado de la caja abierta.") }
+                }
+                RadioButton {
+                    id: accountRadio
+                    visible: dlg.sale.hasCustomer === true
+                    text: qsTr("A la cuenta de %1").arg(dlg.sale.customerName || "")
+                    HelpTip { text: qsTr("La venta fue a crédito: en lugar de entregar dinero, se rebaja la deuda del cliente. Si ya pagó todo, le queda saldo a favor.") }
                 }
                 RadioButton {
                     id: transferRadio

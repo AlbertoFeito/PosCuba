@@ -10,7 +10,7 @@ ItemDelegate {
     property bool alert: false
     property string tip: ""
 
-    implicitHeight: 44
+    implicitHeight: 40
     focusPolicy: Qt.NoFocus
 
     contentItem: RowLayout {

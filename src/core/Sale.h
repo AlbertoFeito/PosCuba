@@ -9,6 +9,9 @@
 namespace PaymentMethod {
 inline QString cash() { return QStringLiteral("cash"); }
 inline QString transfer() { return QStringLiteral("transfer"); }
+// A credito (fiado): lo que el cliente queda debiendo. No se guarda en payments sino en sales.credit_cents.
+// En devoluciones: rebajar la deuda del cliente en lugar de entregar dinero.
+inline QString credit() { return QStringLiteral("credit"); }
 } // namespace PaymentMethod
 
 struct CartLine
@@ -40,6 +43,7 @@ struct SaleTotals
     qint64 paid = 0;          // todo en moneda base
     qint64 cashPaid = 0;
     qint64 transferPaid = 0;
+    qint64 creditPaid = 0;    // queda a credito (fiado)
     qint64 change = 0;        // vuelto, en efectivo y moneda base
     qint64 remaining = 0;     // falta por pagar
 };
@@ -77,6 +81,9 @@ struct CashSummary
     qint64 movementsIn = 0;     // ingresos manuales
     qint64 movementsOut = 0;    // retiros (positivo)
     qint64 profit = 0;          // venta - costo
+    qint64 creditSales = 0;     // vendido a credito (fiado), menos lo devuelto a la cuenta
+    qint64 creditPaymentsCash = 0;      // abonos de clientes en efectivo (entran a la gaveta)
+    qint64 creditPaymentsTransfer = 0;  // abonos por transferencia
     QVector<CurrencyAmount> expected; // efectivo esperado por moneda (incluye fondo inicial)
 };
 
@@ -114,7 +121,7 @@ struct RefundInfo
     int number = 0;
     QString createdAt;
     QString userName;
-    QString method;           // PaymentMethod::cash() / transfer()
+    QString method;           // PaymentMethod::cash() / transfer() / credit() (a la cuenta del cliente)
     QString reason;
     qint64 total = 0;
 };
@@ -130,6 +137,8 @@ struct SaleDetail
     qint64 discount = 0;
     qint64 total = 0;
     qint64 change = 0;
+    qint64 credit = 0;      // a credito (fiado)
+    QString customerName;
     QVector<SaleItemDetail> items;
     QVector<PaymentDetail> payments;
     QVector<RefundInfo> refunds;
@@ -182,6 +191,8 @@ struct SaleRefundState
     qint64 subtotal = 0;
     qint64 total = 0;
     qint64 refunded = 0;      // ya devuelto (moneda base)
+    int customerId = 0;       // venta a credito: se puede devolver a la cuenta del cliente
+    QString customerName;
     QVector<RefundableItem> items;
 
     bool voided() const { return status == QLatin1String("voided"); }
@@ -202,7 +213,7 @@ struct RefundRequest
     int saleId = 0;
     QMap<int, qint64> qtyByItem;      // sale_item_id -> cantidad (milesimas)
     bool all = false;                 // devolver todo lo que queda (anular)
-    QString method = PaymentMethod::cash();
+    QString method = PaymentMethod::cash();   // o transfer(), o credit() = rebajar la deuda del cliente
     QString reason;
     bool restock = true;              // reintegrar al inventario
     int userId = 0;
@@ -226,4 +237,5 @@ struct RefundTotals
     qint64 cost = 0;
     qint64 cash = 0;
     qint64 transfer = 0;
+    qint64 account = 0;    // a la cuenta del cliente (no mueve dinero)
 };

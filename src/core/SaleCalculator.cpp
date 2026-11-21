@@ -49,10 +49,12 @@ SaleTotals SaleCalculator::compute(const QVector<CartLine> &lines, qint64 discou
         const qint64 base = toBase(p.amountCents, p.rateMilli);
         if (p.method == PaymentMethod::transfer())
             t.transferPaid += base;
+        else if (p.method == PaymentMethod::credit())
+            t.creditPaid += base;
         else
             t.cashPaid += base;
     }
-    t.paid = t.cashPaid + t.transferPaid;
+    t.paid = t.cashPaid + t.transferPaid + t.creditPaid;
     t.remaining = qMax<qint64>(0, t.total - t.paid);
     t.change = qMax<qint64>(0, t.paid - t.total);
     return t;
@@ -84,7 +86,8 @@ QString SaleCalculator::validatePayments(const SaleTotals &t, const QVector<Paym
             return tr("Los pagos no pueden ser negativos.");
         if (p.rateMilli <= 0)
             return tr("Tasa de cambio no válida para %1.").arg(p.currency);
-        if (p.method != PaymentMethod::cash() && p.method != PaymentMethod::transfer())
+        if (p.method != PaymentMethod::cash() && p.method != PaymentMethod::transfer()
+            && p.method != PaymentMethod::credit())
             return tr("Método de pago no válido.");
     }
     if (t.remaining > 0)
@@ -93,5 +96,7 @@ QString SaleCalculator::validatePayments(const SaleTotals &t, const QVector<Paym
     if (t.transferPaid > t.total)
         return tr("La transferencia (%1) no puede superar el total (%2).")
             .arg(Money::formatCents(t.transferPaid), Money::formatCents(t.total));
+    if (t.creditPaid > 0 && t.paid > t.total)
+        return tr("Lo que queda a crédito no puede ser mayor que lo que falta por pagar.");
     return QString();
 }

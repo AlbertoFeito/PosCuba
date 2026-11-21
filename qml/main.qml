@@ -19,20 +19,24 @@ ApplicationWindow {
     readonly property int pageUsers: 6
     readonly property int pageBackups: 7
     readonly property int pageStatus: 8
+    readonly property int pageCustomers: 9
+    readonly property int pageExpenses: 10
     property int currentPage: app.dbReady ? pageSale : pageStatus
 
     readonly property bool working: app.dbReady && app.loggedIn
     readonly property bool admin: working && app.isAdmin
     // Un cajero nunca ve paginas de administrador aunque currentPage apunte a una.
     readonly property int shownPage: !app.dbReady ? pageStatus
-                                     : (!app.isAdmin && currentPage !== pageSale && currentPage !== pageCash)
+                                     : (!app.isAdmin && currentPage !== pageSale && currentPage !== pageCash
+                                        && currentPage !== pageCustomers)
                                        ? pageSale : currentPage
 
     // Seccion del manual para lo que se ve ahora (F1). Los dialogos la cambian con help.enter/leave.
     readonly property string pageTopic: !app.dbReady ? "problemas"
                                         : !app.loggedIn ? (app.needsSetup ? "inicio" : "sesion")
                                         : [ "venta", "productos", "inventario", "caja", "reportes",
-                                            settingsScreen.helpTopic, "usuarios", "respaldos", "problemas" ][shownPage]
+                                            settingsScreen.helpTopic, "usuarios", "respaldos", "problemas",
+                                            "clientes", "gastos" ][shownPage]
     onPageTopicChanged: help.pageTopic = pageTopic
 
     function openHelp(topic) {
@@ -106,6 +110,8 @@ ApplicationWindow {
     Shortcut { sequence: "Ctrl+7"; enabled: window.admin; onActivated: window.go(window.pageUsers) }
     Shortcut { sequence: "Ctrl+8"; enabled: window.admin; onActivated: window.go(window.pageBackups) }
     Shortcut { sequence: "Ctrl+9"; enabled: window.admin || !app.dbReady; onActivated: window.go(window.pageStatus) }
+    Shortcut { sequence: "Ctrl+Shift+C"; enabled: window.working; onActivated: window.go(window.pageCustomers) }
+    Shortcut { sequence: "Ctrl+Shift+G"; enabled: window.admin; onActivated: window.go(window.pageExpenses) }
     Shortcut { sequence: "Ctrl+L"; enabled: window.working; onActivated: window.logout() }
 
     RowLayout {
@@ -168,6 +174,24 @@ ApplicationWindow {
                     shortcutText: "Ctrl+4"
                     selected: window.currentPage === window.pageCash
                     onClicked: window.go(window.pageCash)
+                }
+                SidebarButton {
+                    Layout.fillWidth: true
+                    visible: window.working
+                    text: customerCtrl.debtorsCount > 0 ? qsTr("Clientes (%1)").arg(customerCtrl.debtorsCount) : qsTr("Clientes")
+                    tip: qsTr("Clientes que compran a crédito (fiado): cuánto debe cada uno, su historial y los abonos. El número es cuántos deben.")
+                    shortcutText: "Ctrl+⇧+C"
+                    selected: window.currentPage === window.pageCustomers
+                    onClicked: window.go(window.pageCustomers)
+                }
+                SidebarButton {
+                    Layout.fillWidth: true
+                    visible: window.admin
+                    text: qsTr("Gastos")
+                    tip: qsTr("Gastos del negocio (alquiler, electricidad, salarios…), gastos fijos mensuales y ganancia neta.")
+                    shortcutText: "Ctrl+⇧+G"
+                    selected: window.currentPage === window.pageExpenses
+                    onClicked: window.go(window.pageExpenses)
                 }
                 SidebarButton {
                     Layout.fillWidth: true
@@ -296,6 +320,8 @@ ApplicationWindow {
             UsersScreen { }
             BackupScreen { }
             StatusScreen { }
+            CustomersScreen { }
+            ExpensesScreen { }
         }
         }
     }

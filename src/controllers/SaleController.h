@@ -71,6 +71,7 @@ public slots:
     void refreshCurrencies();
 
 signals:
+    void creditSale();
     void searchTextChanged();
     void totalsChanged();
     void sessionChanged();
